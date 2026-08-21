@@ -1,0 +1,7 @@
+{
+  "extends": "@sql-learn/config-typescript/node-library.json",
+  "compilerOptions": {
+    "declaration": false
+  },
+  "include": ["src/**/*.ts"]
+}
