@@ -1,0 +1,8 @@
+{
+  "name": "@sql-learn/config-tailwind",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    "./theme.css": "./theme.css"
+  }
+}

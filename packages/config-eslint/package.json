@@ -1,0 +1,20 @@
+{
+  "name": "@sql-learn/config-eslint",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./base": "./base.js",
+    "./node": "./node.js",
+    "./next": "./next.js"
+  },
+  "dependencies": {
+    "@eslint/js": "^9",
+    "eslint-config-next": "16.1.6",
+    "globals": "^15",
+    "typescript-eslint": "^8"
+  },
+  "peerDependencies": {
+    "eslint": "^9"
+  }
+}
