@@ -1,0 +1,213 @@
+generator client {
+  provider        = "prisma-client"
+  output          = "../src/generated/prisma"
+  previewFeatures = ["partialIndexes"]
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model assignments {
+  id            BigInt                   @id @default(autoincrement())
+  public_id     String                   @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  slug          String?                  @unique(map: "assignments_slug_unique_idx", where: raw("((deleted_at IS NULL) AND (slug IS NOT NULL))"))
+  title         String
+  description   String?
+  question      String
+  difficulty    String                   @default("medium")
+  sample_tables Json                     @default("[]")
+  solution_sql  String?
+  is_published  Boolean                  @default(true)
+  created_by    BigInt?
+  created_at    DateTime                 @default(now()) @db.Timestamptz(6)
+  updated_at    DateTime                 @default(now()) @db.Timestamptz(6)
+  deleted_at    DateTime?                @db.Timestamptz(6)
+  search_vector Unsupported("tsvector")? @default(dbgenerated("to_tsvector('english'::regconfig, ((COALESCE(title, ''::text) || ' '::text) || COALESCE(description, ''::text)))"))
+  users         users?                   @relation(fields: [created_by], references: [id], onUpdate: NoAction)
+  attempts      attempts[]
+  hint_requests hint_requests[]
+  test_cases    test_cases[]
+
+  @@index([search_vector], map: "assignments_search_vector_index", type: Gin)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model attempts {
+  id                    BigInt             @id @default(autoincrement())
+  user_id               BigInt
+  assignment_id         BigInt
+  status                String             @default("in_progress")
+  last_query            String             @default("")
+  attempt_count         Int                @default(0)
+  completed_at          DateTime?          @db.Timestamptz(6)
+  schema_name           String?            @unique
+  schema_provisioned_at DateTime?          @db.Timestamptz(6)
+  last_attempt_at       DateTime           @default(now()) @db.Timestamptz(6)
+  created_at            DateTime           @default(now()) @db.Timestamptz(6)
+  updated_at            DateTime           @default(now()) @db.Timestamptz(6)
+  assignments           assignments        @relation(fields: [assignment_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users                 users              @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  hint_requests         hint_requests[]
+  query_executions      query_executions[]
+  submissions           submissions[]
+
+  @@unique([user_id, assignment_id], map: "attempts_user_assignment_unique")
+}
+
+model evaluation_results {
+  id            BigInt      @id @default(autoincrement())
+  submission_id BigInt
+  test_case_id  BigInt
+  passed        Boolean
+  details       Json?
+  created_at    DateTime    @default(now()) @db.Timestamptz(6)
+  submissions   submissions @relation(fields: [submission_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  test_cases    test_cases  @relation(fields: [test_case_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([submission_id, test_case_id], map: "evaluation_results_submission_test_case_unique")
+}
+
+model hint_requests {
+  id                BigInt      @id @default(autoincrement())
+  user_id           BigInt
+  assignment_id     BigInt
+  attempt_id        BigInt?
+  user_query        String
+  hint_level        Int
+  concept_tag       String?
+  hint_text         String
+  model             String?
+  input_tokens      Int?
+  output_tokens     Int?
+  leak_check_passed Boolean     @default(true)
+  created_at        DateTime    @default(now()) @db.Timestamptz(6)
+  assignments       assignments @relation(fields: [assignment_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  attempts          attempts?   @relation(fields: [attempt_id], references: [id], onUpdate: NoAction)
+  users             users       @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([user_id, assignment_id, created_at], map: "hint_requests_user_id_assignment_id_created_at_index")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model query_executions {
+  id            BigInt   @default(autoincrement())
+  created_at    DateTime @default(now()) @db.Timestamptz(6)
+  attempt_id    BigInt
+  sql_text      String
+  status        String
+  error_message String?
+  row_count     Int?
+  duration_ms   Int?
+  attempts      attempts @relation(fields: [attempt_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([id, created_at])
+  @@index([attempt_id, created_at], map: "query_executions_attempt_id_created_at_index")
+}
+
+model sessions {
+  id         BigInt   @id @default(autoincrement())
+  user_id    BigInt
+  token      String   @unique
+  expires_at DateTime @db.Timestamptz(6)
+  ip         String?
+  user_agent String?
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  updated_at DateTime @default(now()) @db.Timestamptz(6)
+  users      users    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([user_id], map: "sessions_user_id_index")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model submissions {
+  id                 BigInt               @id @default(autoincrement())
+  attempt_id         BigInt
+  sql_text           String
+  status             String               @default("pending")
+  passed             Boolean?
+  score              Decimal?             @db.Decimal(5, 2)
+  execution_time_ms  Int?
+  row_count          Int?
+  error_message      String?
+  submitted_at       DateTime             @default(now()) @db.Timestamptz(6)
+  evaluation_results evaluation_results[]
+  attempts           attempts             @relation(fields: [attempt_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([attempt_id], map: "submissions_attempt_id_index")
+  @@index([status], map: "submissions_status_index", where: raw("(status = ANY (ARRAY['pending'::text, 'evaluating'::text]))"))
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model test_cases {
+  id                   BigInt               @id @default(autoincrement())
+  assignment_id        BigInt
+  name                 String?
+  expected_output_type String
+  expected_output      Json
+  is_hidden            Boolean              @default(false)
+  weight               Decimal              @default(1) @db.Decimal(5, 2)
+  order_index          Int                  @default(0)
+  created_at           DateTime             @default(now()) @db.Timestamptz(6)
+  updated_at           DateTime             @default(now()) @db.Timestamptz(6)
+  evaluation_results   evaluation_results[]
+  assignments          assignments          @relation(fields: [assignment_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([assignment_id, order_index], map: "test_cases_assignment_id_order_index_index")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
+model users {
+  id             BigInt          @id @default(autoincrement())
+  /// Real DB constraint (not representable in schema.prisma): unique index
+  /// `users_email_lower_unique_idx` on lower(email) WHERE deleted_at IS NULL.
+  /// Repository code must query/compare case-insensitively and be prepared
+  /// to catch a raw 23505 unique_violation from Postgres on create().
+  email          String
+  password_hash  String?
+  display_name   String
+  role           String          @default("student")
+  created_at     DateTime        @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime        @default(now()) @db.Timestamptz(6)
+  deleted_at     DateTime?       @db.Timestamptz(6)
+  email_verified Boolean         @default(false)
+  image          String?
+  accounts       accounts[]
+  assignments    assignments[]
+  attempts       attempts[]
+  hint_requests  hint_requests[]
+  sessions       sessions[]
+}
+
+model accounts {
+  id                       BigInt    @id @default(autoincrement())
+  user_id                  BigInt
+  account_id               String
+  provider_id              String
+  access_token             String?
+  refresh_token            String?
+  id_token                 String?
+  access_token_expires_at  DateTime? @db.Timestamptz(6)
+  refresh_token_expires_at DateTime? @db.Timestamptz(6)
+  scope                    String?
+  password                 String?
+  created_at               DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at               DateTime  @default(now()) @db.Timestamptz(6)
+  issuer                   String
+  users                    users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([user_id], map: "accounts_user_id_index")
+}
+
+model verifications {
+  id         BigInt   @id @default(autoincrement())
+  identifier String
+  value      String
+  expires_at DateTime @db.Timestamptz(6)
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  updated_at DateTime @default(now()) @db.Timestamptz(6)
+
+  @@index([identifier], map: "verifications_identifier_index")
+}
