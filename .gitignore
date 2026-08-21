@@ -1,6 +1,9 @@
 # dependencies (bun install)
 node_modules
 
+# generated Prisma Client (regenerated via `prisma generate`, not committed)
+packages/database/src/generated
+research/
 # output
 out
 dist
@@ -21,11 +24,13 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 .env.test.local
 .env.production.local
 .env.local
+.env.docker
 
 # caches
 .eslintcache
 .cache
 *.tsbuildinfo
+.turbo
 
 # IntelliJ based IDEs
 .idea
