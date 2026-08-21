@@ -2,6 +2,15 @@
 
 import { useRef, useEffect } from "react";
 import Editor from "@monaco-editor/react";
+import type { OnMount } from "@monaco-editor/react";
+
+// Derived from OnMount's own parameter type (rather than importing
+// `monaco-editor` directly) so it always matches whichever copy of
+// monaco-editor's types @monaco-editor/react itself resolves against -
+// the package appears twice in this monorepo's install graph (hoisted vs.
+// nested), and those two copies' structurally-similar types aren't
+// nominally assignable to each other.
+type MonacoEditorInstance = Parameters<OnMount>[0];
 
 interface SQLEditorProps {
   value: string;
@@ -16,9 +25,9 @@ export default function SQLEditor({
   disabled = false,
   placeholder = "Write your SQL query here...",
 }: SQLEditorProps) {
-  const editorRef = useRef<any>(null);
+  const editorRef = useRef<MonacoEditorInstance | null>(null);
 
-  const handleEditorDidMount = (editor: any, monaco: any) => {
+  const handleEditorDidMount: OnMount = (editor, monaco) => {
     editorRef.current = editor;
 
     // Configure SQL language
@@ -53,7 +62,7 @@ export default function SQLEditor({
 
     // Configure editor options for SQL
     editor.updateOptions({
-      wordBasedSuggestions: false,
+      wordBasedSuggestions: "off",
       suggestOnTriggerCharacters: true,
       quickSuggestions: true,
       parameterHints: { enabled: true },
@@ -74,7 +83,7 @@ export default function SQLEditor({
     // Handle placeholder
     if (!value && placeholder) {
       editor.setValue("");
-      const placeholderDecoration = editor.createDecorationsCollection([
+      editor.createDecorationsCollection([
         {
           range: new monaco.Range(1, 1, 1, 1),
           options: {

@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  transpilePackages: ["@sql-learn/types", "@sql-learn/ui"],
 };
 
 export default nextConfig;

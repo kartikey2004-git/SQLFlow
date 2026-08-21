@@ -1,154 +1,112 @@
+import type { QueryResult, GradingResult, JobStatus } from "@sql-learn/types";
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
-export interface SandboxInitResponse {
-  schemaName: string;
-  isNew: boolean;
-}
-
-export interface QueryResult {
-  columns: string[];
-  rows: Record<string, any>[];
-  rowCount: number;
-  executionTime: number;
-}
-
-export interface GradingResult {
-  passed: boolean;
-  executionTime: number;
-  rowCount: number;
-  reason?: string;
-}
-
-export interface ApiResponse<T> {
+interface ApiEnvelope<T> {
   success: boolean;
-  data: T;
   message: string;
+  data: T;
 }
 
-export const initSandbox = async (
-  assignmentId: string,
-): Promise<SandboxInitResponse> => {
-  try {
-    // Get identity ID from localStorage or generate new one
-    let identityId = localStorage.getItem("identityId");
+const request = async <T>(path: string, init?: RequestInit): Promise<T> => {
+  const response = await fetch(`${API_URL}${path}`, {
+    ...init,
+    credentials: "include",
+    headers: { "Content-Type": "application/json", ...init?.headers },
+  });
+  const result: ApiEnvelope<T> = await response.json();
+  if (!result.success) {
+    throw new Error(result.message || "Request failed");
+  }
+  return result.data;
+};
 
-    if (!identityId) {
-      // Generate a simple UUID-like identity for guest users
-      identityId =
-        "guest_" + Date.now() + "_" + Math.random().toString(36).substr(2, 9);
-      localStorage.setItem("identityId", identityId);
-    }
+export const initSandbox = (assignmentId: number): Promise<{ schemaName: string; isNew: boolean }> =>
+  request("/sandbox/init", { method: "POST", body: JSON.stringify({ assignmentId }) });
 
-    const response = await fetch(`${API_URL}/sandbox/init`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Identity-ID": identityId,
-      },
-      body: JSON.stringify({ assignmentId }),
+const submitJob = (path: string, assignmentId: number, query: string): Promise<{ jobId: string }> =>
+  request(path, { method: "POST", body: JSON.stringify({ assignmentId, query }) });
+
+/**
+ * Subscribes to a queued job's status via SSE (GET /sandbox/jobs/:id/stream),
+ * resolving once it reaches a terminal state. Falls back to polling
+ * GET /sandbox/jobs/:id if EventSource isn't available (e.g. very old
+ * browsers) or the stream errors out before a terminal state is reached.
+ */
+const waitForJob = (jobId: string, onStatus?: (status: JobStatus) => void): Promise<JobStatus> => {
+  const terminal = new Set(["completed", "cancelled", "failed"]);
+
+  if (typeof EventSource === "undefined") {
+    return pollForJob(jobId, onStatus);
+  }
+
+  return new Promise((resolve, reject) => {
+    const source = new EventSource(`${API_URL}/sandbox/jobs/${jobId}/stream`, { withCredentials: true });
+    let settled = false;
+
+    const finish = (fn: () => void) => {
+      if (settled) return;
+      settled = true;
+      source.close();
+      fn();
+    };
+
+    source.addEventListener("status", (event) => {
+      const status: JobStatus = JSON.parse((event as MessageEvent).data);
+      onStatus?.(status);
+      if (terminal.has(status.state)) {
+        finish(() => resolve(status));
+      }
     });
 
-    const result: ApiResponse<SandboxInitResponse> = await response.json();
+    source.addEventListener("error", () => {
+      // The stream itself failed (network blip, proxy buffering, etc.) -
+      // the job may still be running server-side, so fall back to polling
+      // rather than surfacing a spurious failure.
+      finish(() => pollForJob(jobId, onStatus).then(resolve, reject));
+    });
+  });
+};
 
-    if (!result.success) {
-      throw new Error(result.message || "Failed to initialize sandbox");
-    }
-
-    // Store the returned identity ID if server generated a new one
-    const returnedIdentityId = response.headers.get("X-Identity-ID");
-    if (returnedIdentityId) {
-      localStorage.setItem("identityId", returnedIdentityId);
-    }
-
-    return result.data;
-  } catch (error) {
-    console.error("Error initializing sandbox:", error);
-    throw error;
+const pollForJob = async (jobId: string, onStatus?: (status: JobStatus) => void): Promise<JobStatus> => {
+  const terminal = new Set(["completed", "cancelled", "failed"]);
+  for (let i = 0; i < 40; i++) {
+    const status = await request<JobStatus>(`/sandbox/jobs/${jobId}`);
+    onStatus?.(status);
+    if (terminal.has(status.state)) return status;
+    await new Promise((resolve) => setTimeout(resolve, 500));
   }
+  throw new Error("Timed out waiting for job to finish");
+};
+
+const jobResult = <T>(status: JobStatus): T => {
+  if (status.state !== "completed") {
+    throw new Error(`Job did not complete (state: ${status.state})`);
+  }
+  if (status.output?.error) {
+    throw new Error(status.output.error.message);
+  }
+  return status.output?.result as T;
 };
 
 export const executeQuery = async (
-  assignmentId: string,
+  assignmentId: number,
   query: string,
+  onStatus?: (status: JobStatus) => void,
 ): Promise<QueryResult> => {
-  try {
-    // Get identity ID from localStorage
-    const identityId = localStorage.getItem("identityId");
-
-    if (!identityId) {
-      throw new Error("Identity not found. Please refresh the page.");
-    }
-
-    const response = await fetch(`${API_URL}/sandbox/execute`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Identity-ID": identityId,
-      },
-      body: JSON.stringify({ assignmentId, query }),
-    });
-
-    const result = await response.json();
-
-    // Check if response has a expected structure
-    if (!result.success) {
-      throw new Error(result.message || "Failed to execute query");
-    }
-
-    // Extract the actual query result data
-    const queryResult = result.data;
-
-    // Validate the result structure
-    if (!queryResult || typeof queryResult !== "object") {
-      throw new Error("Invalid response format from server");
-    }
-
-    return queryResult;
-  } catch (error) {
-    console.error("Error executing query:", error);
-    throw error;
-  }
+  const { jobId } = await submitJob("/sandbox/execute", assignmentId, query);
+  const status = await waitForJob(jobId, onStatus);
+  return jobResult<QueryResult>(status);
 };
 
 export const gradeSubmission = async (
-  assignmentId: string,
+  assignmentId: number,
   query: string,
+  onStatus?: (status: JobStatus) => void,
 ): Promise<GradingResult> => {
-  try {
-    // Get identity ID from localStorage
-    const identityId = localStorage.getItem("identityId");
-
-    if (!identityId) {
-      throw new Error("Identity not found. Please refresh the page.");
-    }
-
-    const response = await fetch(`${API_URL}/sandbox/grade`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Identity-ID": identityId,
-      },
-      body: JSON.stringify({ assignmentId, query }),
-    });
-
-    const result = await response.json();
-
-    // Check if response has a expected structure
-    if (!result.success) {
-      throw new Error(result.message || "Failed to grade submission");
-    }
-
-    // Extract the actual grading result data
-    const gradingResult = result.data;
-
-    // Validate the result structure
-    if (!gradingResult || typeof gradingResult !== "object") {
-      throw new Error("Invalid response format from server");
-    }
-
-    return gradingResult;
-  } catch (error) {
-    console.error("Error grading submission:", error);
-    throw error;
-  }
+  const { jobId } = await submitJob("/sandbox/grade", assignmentId, query);
+  const status = await waitForJob(jobId, onStatus);
+  return jobResult<GradingResult>(status);
 };
+
+export type { QueryResult, GradingResult, JobStatus };

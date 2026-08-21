@@ -1,93 +1,40 @@
+import type { HintResponse } from "@sql-learn/types";
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
-export interface HintRequest {
-  assignmentId: string;
-  userQuery: string;
-  hintType?: "syntax" | "logic" | "approach";
-}
-
-export interface HintResponse {
-  hint: string;
-  hintType: "syntax" | "logic" | "approach";
-  requestId: string;
-}
-
-export interface ApiResponse<T> {
+interface ApiEnvelope<T> {
   success: boolean;
-  data: T;
   message: string;
+  data: T;
 }
 
-export const getHint = async (
-  assignmentId: string,
-  userQuery: string,
-  hintType?: "syntax" | "logic" | "approach",
-): Promise<HintResponse> => {
-  try {
-    // Get identity ID from localStorage
-    const identityId = localStorage.getItem("identityId");
-
-    if (!identityId) {
-      throw new Error("Identity not found. Please refresh the page.");
-    }
-
-    const response = await fetch(`${API_URL}/hints`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Identity-ID": identityId,
-      },
-      body: JSON.stringify({ assignmentId, userQuery, hintType }),
-    });
-
-    const result = await response.json();
-
-    if (!result.success) {
-      throw new Error(result.message || "Failed to get hint");
-    }
-
-    return result.data;
-  } catch (error) {
-    console.error("Error getting hint:", error);
-    throw error;
+const request = async <T>(path: string, init?: RequestInit): Promise<T> => {
+  const response = await fetch(`${API_URL}${path}`, {
+    ...init,
+    credentials: "include",
+    headers: { "Content-Type": "application/json", ...init?.headers },
+  });
+  const result: ApiEnvelope<T> = await response.json();
+  if (response.status === 501) {
+    throw new HintNotConfiguredError(result.message || "AI hints are not configured on this server");
   }
+  if (!result.success) {
+    throw new Error(result.message || "Request failed");
+  }
+  return result.data;
 };
 
-export const getHintHistory = async (
-  assignmentId?: string,
-): Promise<Array<{
-  hint: string;
-  hintType: string;
-  createdAt: Date;
-}>> => {
-  try {
-    const identityId = localStorage.getItem("identityId");
+export class HintNotConfiguredError extends Error {}
 
-    if (!identityId) {
-      throw new Error("Identity not found. Please refresh the page.");
-    }
+export const getHint = (assignmentId: number, userQuery: string): Promise<HintResponse> =>
+  request("/hints", { method: "POST", body: JSON.stringify({ assignmentId, userQuery }) });
 
-    const url = assignmentId 
-      ? `${API_URL}/hints/history?assignmentId=${assignmentId}`
-      : `${API_URL}/hints/history`;
+export interface HintHistoryEntry {
+  hintLevel: number;
+  hintText: string;
+  conceptTag: string | null;
+  createdAt: string;
+}
 
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Identity-ID": identityId,
-      },
-    });
-
-    const result = await response.json();
-
-    if (!result.success) {
-      throw new Error(result.message || "Failed to get hint history");
-    }
-
-    return result.data;
-  } catch (error) {
-    console.error("Error getting hint history:", error);
-    throw error;
-  }
-};
+export const getHintHistory = (assignmentId?: number): Promise<HintHistoryEntry[]> =>
+  request(assignmentId ? `/hints/history?assignmentId=${assignmentId}` : "/hints/history");

@@ -1,26 +1,36 @@
 {
-  "name": "web",
+  "name": "@sql-learn/web",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
+    "@sql-learn/types": "workspace:*",
+    "@sql-learn/ui": "workspace:*",
+    "@tanstack/react-query": "^5.101.4",
+    "better-auth": "^1.7.1",
+    "lucide-react": "^0.500.0",
     "next": "16.1.6",
     "react": "19.2.3",
-    "react-dom": "19.2.3",
-    "sass": "^1.97.3"
+    "react-dom": "19.2.3"
   },
   "devDependencies": {
+    "@sql-learn/config-eslint": "workspace:*",
+    "@sql-learn/config-tailwind": "workspace:*",
+    "@sql-learn/config-typescript": "workspace:*",
+    "@tailwindcss/postcss": "^4.1.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
+    "tailwindcss": "^4.1.0",
     "typescript": "^5"
   },
   "ignoreScripts": [

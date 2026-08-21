@@ -1,115 +1,35 @@
+import type { ProgressData } from "@sql-learn/types";
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
-export interface ProgressData {
-  lastQuery: string;
-  attemptCount: number;
-  isCompleted: boolean;
-  completedAt?: Date;
-  lastAttemptAt: Date;
-}
-
-export interface ApiResponse<T> {
+interface ApiEnvelope<T> {
   success: boolean;
-  data: T;
   message: string;
+  data: T;
 }
 
-export const getProgress = async (assignmentId: string): Promise<ProgressData> => {
-  try {
-    const identityId = localStorage.getItem("identityId");
-
-    if (!identityId) {
-      throw new Error("Identity not found. Please refresh the page.");
-    }
-
-    const response = await fetch(`${API_URL}/progress/${assignmentId}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Identity-ID": identityId,
-      },
-    });
-
-    const result = await response.json();
-
-    if (!result.success) {
-      throw new Error(result.message || "Failed to get progress");
-    }
-
-    return result.data;
-  } catch (error) {
-    console.error("Error getting progress:", error);
-    throw error;
+const request = async <T>(path: string, init?: RequestInit): Promise<T> => {
+  const response = await fetch(`${API_URL}${path}`, {
+    ...init,
+    credentials: "include",
+    headers: { "Content-Type": "application/json", ...init?.headers },
+  });
+  const result: ApiEnvelope<T> = await response.json();
+  if (!result.success) {
+    throw new Error(result.message || "Request failed");
   }
+  return result.data;
 };
 
-export const updateProgress = async (
-  assignmentId: string,
-  updates: {
-    lastQuery?: string;
-    incrementAttempt?: boolean;
-    markCompleted?: boolean;
-  },
-): Promise<ProgressData> => {
-  try {
-    const identityId = localStorage.getItem("identityId");
+export const getProgress = (assignmentId: number): Promise<ProgressData> =>
+  request(`/progress/${assignmentId}`);
 
-    if (!identityId) {
-      throw new Error("Identity not found. Please refresh the page.");
-    }
+export const updateProgress = (
+  assignmentId: number,
+  updates: { lastQuery?: string; incrementAttempt?: boolean; markCompleted?: boolean },
+): Promise<ProgressData> =>
+  request(`/progress/${assignmentId}`, { method: "PUT", body: JSON.stringify(updates) });
 
-    const response = await fetch(`${API_URL}/progress/${assignmentId}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Identity-ID": identityId,
-      },
-      body: JSON.stringify(updates),
-    });
-
-    const result = await response.json();
-
-    if (!result.success) {
-      throw new Error(result.message || "Failed to update progress");
-    }
-
-    return result.data;
-  } catch (error) {
-    console.error("Error updating progress:", error);
-    throw error;
-  }
-};
-
-export const getAllProgress = async (): Promise<
-  Array<{
-    assignmentId: string;
-    progress: ProgressData;
-  }>
-> => {
-  try {
-    const identityId = localStorage.getItem("identityId");
-
-    if (!identityId) {
-      throw new Error("Identity not found. Please refresh the page.");
-    }
-
-    const response = await fetch(`${API_URL}/progress/all`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Identity-ID": identityId,
-      },
-    });
-
-    const result = await response.json();
-
-    if (!result.success) {
-      throw new Error(result.message || "Failed to get all progress");
-    }
-
-    return result.data;
-  } catch (error) {
-    console.error("Error getting all progress:", error);
-    throw error;
-  }
-};
+export const getAllProgress = (): Promise<
+  Array<{ assignmentId: number; assignmentTitle: string; progress: ProgressData }>
+> => request("/progress/all");
