@@ -1,27 +1,54 @@
 {
-  "name": "cipher-schools-backend",
-  "module": "index.ts",
+  "name": "@sql-learn/api",
+  "module": "src/index.ts",
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "tsx watch index.ts"
+    "dev": "tsx watch src/index.ts",
+    "worker": "tsx watch src/worker.ts",
+    "seed": "tsx scripts/seedAssignments.ts",
+    "migrate:auth-accounts": "tsx scripts/migrateAuthAccounts.ts",
+    "migrate": "node-pg-migrate --envPath .env -d POSTGRES_URL",
+    "migrate:test": "node-pg-migrate --envPath .env -d TEST_DATABASE_URL",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "devDependencies": {
+    "@sql-learn/config-eslint": "workspace:*",
+    "@sql-learn/config-typescript": "workspace:*",
     "@types/bun": "latest",
     "@types/express": "^5.0.6",
+    "@types/supertest": "^7.2.1",
+    "eslint": "^9",
+    "node-pg-migrate": "^7.9.1",
     "nodemon": "^3.1.14",
-    "tsx": "^4.21.0"
-  },
-  "peerDependencies": {
-    "typescript": "^5"
+    "supertest": "^7.2.2",
+    "tsx": "^4.21.0",
+    "typescript": "^5",
+    "vitest": "^4.1.10",
+    "zod": "^4.4.3"
   },
   "dependencies": {
+    "@ai-sdk/google": "^2.0.0",
+    "@sql-learn/auth": "workspace:*",
+    "@sql-learn/database": "workspace:*",
+    "@sql-learn/types": "workspace:*",
+    "@sql-learn/validation": "workspace:*",
     "@types/cors": "^2.8.19",
     "@types/pg": "^8.16.0",
+    "ai": "^5.0.0",
+    "better-auth": "^1.7.1",
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
-    "mongoose": "^9.2.3",
-    "pg": "^8.19.0"
+    "express-rate-limit": "^8.6.2",
+    "pg": "^8.19.0",
+    "pg-boss": "^12.27.0",
+    "pgsql-parser": "^18.2.6",
+    "pino": "^10.3.1",
+    "pino-http": "^11.0.0",
+    "prom-client": "^15.1.3"
   }
 }
