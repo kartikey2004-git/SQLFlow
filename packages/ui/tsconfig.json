@@ -1,0 +1,10 @@
+{
+  "extends": "@sql-learn/config-typescript/nextjs.json",
+  "compilerOptions": {
+    "paths": {
+      "@sql-learn/ui/components/*": ["./src/components/*"],
+      "@sql-learn/ui/lib/*": ["./src/lib/*"]
+    }
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx"]
+}
