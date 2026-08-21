@@ -1,11 +1,21 @@
 name: sql-learn
 services:
   db:
-    image: postgres:latest
-    restart: always
+    image: postgres:17-alpine
+    restart: unless-stopped
     environment:
-      POSTGRES_USER: kartikey
-      POSTGRES_PASSWORD: npg_Gd1hR7jebZyJ
-      POSTGRES_DB: sql-learn
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER must be set (see .env.example)}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set (see .env.example)}
+      POSTGRES_DB: ${POSTGRES_DB:-sql-learn}
     ports:
       - "5432:5432"
+    volumes:
+      - sql-learn-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB:-sql-learn}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  sql-learn-postgres-data:

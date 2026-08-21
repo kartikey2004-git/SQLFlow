@@ -1,0 +1,45 @@
+name: sql-learn
+
+# Full local stack: db + app (API server) + worker (job queue consumer),
+# matching prompt.md §27's target shape. This is *additive* to the simpler,
+# still-supported host-based dev flow in apps/api/README.md (`bun run dev` /
+# `bun run worker` against `docker/postgres/docker-compose.yaml`'s Postgres
+# alone) - use whichever fits: host-based for fast iteration (tsx watch
+# reload), this full-stack compose for a production-like local run.
+#
+# Migrations are NOT run automatically by this compose (no init container -
+# keeping this simple rather than building a migration-runner service for a
+# one-time setup step). Run them from the host against the exposed port
+# 5432, same as the host-based flow: `cd apps/api && bun run migrate up`.
+
+include:
+  - docker/postgres/docker-compose.yaml
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    command: ["node_modules/.bin/tsx", "src/index.ts"]
+    env_file:
+      - apps/api/.env.docker
+    ports:
+      - "5000:5000"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  worker:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    command: ["node_modules/.bin/tsx", "src/worker.ts"]
+    env_file:
+      - apps/api/.env.docker
+    ports:
+      - "5001:5001"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped

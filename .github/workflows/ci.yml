@@ -1,0 +1,94 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  api:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci_password
+          POSTGRES_DB: sql-learn-test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ci -d sql-learn-test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      POSTGRES_URL: postgres://ci:ci_password@localhost:5432/sql-learn-test
+      SANDBOX_DATABASE_URL: postgres://sandbox_runner:sandbox_ci_password@localhost:5432/sql-learn-test
+      SANDBOX_DB_PASSWORD: sandbox_ci_password
+      TEST_DATABASE_URL: postgres://ci:ci_password@localhost:5432/sql-learn-test
+      TEST_SANDBOX_DATABASE_URL: postgres://sandbox_runner:sandbox_ci_password@localhost:5432/sql-learn-test
+      CLEANUP_TOKEN: ci-cleanup-token
+      CORS_ORIGIN: http://localhost:3000
+      PORT: 5000
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Cache turbo
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: turbo-api-${{ github.job }}-${{ github.sha }}
+          restore-keys: turbo-api-${{ github.job }}-
+
+      - name: Run migrations against the test database
+        working-directory: apps/api
+        run: bun run migrate:test up
+
+      - name: Typecheck
+        run: bunx turbo run typecheck --filter=@sql-learn/api
+
+      - name: Lint
+        run: bunx turbo run lint --filter=@sql-learn/api
+
+      - name: Test (including the adversarial sandbox security suite)
+        run: bunx turbo run test --filter=@sql-learn/api
+
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Cache turbo
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: turbo-web-${{ github.job }}-${{ github.sha }}
+          restore-keys: turbo-web-${{ github.job }}-
+
+      - name: Lint
+        run: bunx turbo run lint --filter=@sql-learn/web
+
+      - name: Typecheck
+        run: bunx turbo run typecheck --filter=@sql-learn/web
+
+      - name: Build
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:5000
+        run: bunx turbo run build --filter=@sql-learn/web
