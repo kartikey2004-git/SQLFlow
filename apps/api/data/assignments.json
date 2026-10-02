@@ -1,154 +1,575 @@
 [
   {
-    "title": "Find High Salary Employees",
-    "description": "Easy",
-    "question": "List all employees earning more than 50,000",
+    "title": "Select All User Info",
+    "description": "easy",
+    "question": "Write a query to retrieve the id, email, display_name, role, and email_verified status for every user in the users table.",
     "sampleTables": [
       {
-        "tableName": "employees",
+        "tableName": "users",
         "columns": [
-          { "columnName": "id", "dataType": "INTEGER" },
-          { "columnName": "name", "dataType": "TEXT" },
-          { "columnName": "salary", "dataType": "INTEGER" },
-          { "columnName": "department", "dataType": "TEXT" }
+          { "columnName": "id", "dataType": "integer" },
+          { "columnName": "email", "dataType": "text" },
+          { "columnName": "display_name", "dataType": "text" },
+          { "columnName": "role", "dataType": "text" },
+          { "columnName": "email_verified", "dataType": "boolean" },
+          { "columnName": "image", "dataType": "text" }
         ],
         "rows": [
-          { "id": 1, "name": "Alice", "salary": 45000, "department": "HR" },
-          {
-            "id": 2,
-            "name": "Bob",
-            "salary": 60000,
-            "department": "Engineering"
-          },
-          {
-            "id": 3,
-            "name": "Charlie",
-            "salary": 75000,
-            "department": "Engineering"
-          },
-          { "id": 4, "name": "Diana", "salary": 48000, "department": "Sales" }
+          { "id": 1, "email": "alice@gmail.com",    "display_name": "Alice Johnson", "role": "student",    "email_verified": true,  "image": "https://i.pravatar.cc/150?u=alice" },
+          { "id": 2, "email": "bob@company.com",    "display_name": "Bob Smith",     "role": "student",    "email_verified": false, "image": null },
+          { "id": 3, "email": "carol@gmail.com",    "display_name": "Carol White",   "role": "instructor", "email_verified": true,  "image": "https://i.pravatar.cc/150?u=carol" },
+          { "id": 4, "email": "dave@yahoo.com",     "display_name": "Dave Brown",    "role": "student",    "email_verified": false, "image": null },
+          { "id": 5, "email": "admin@platform.com", "display_name": "Admin User",    "role": "admin",      "email_verified": true,  "image": "https://i.pravatar.cc/150?u=admin" },
+          { "id": 6, "email": "eve@gmail.com",      "display_name": "Eve Davis",     "role": "student",    "email_verified": true,  "image": null },
+          { "id": 7, "email": "frank@company.com",  "display_name": "Frank Miller",  "role": "instructor", "email_verified": false, "image": null },
+          { "id": 8, "email": "grace@gmail.com",    "display_name": "Grace Wilson",  "role": "admin",      "email_verified": true,  "image": "https://i.pravatar.cc/150?u=grace" }
         ]
       }
     ],
     "expectedOutput": {
       "type": "table",
       "value": [
-        {
-          "id": 2,
-          "name": "Bob",
-          "salary": 60000,
-          "department": "Engineering"
-        },
-        {
-          "id": 3,
-          "name": "Charlie",
-          "salary": 75000,
-          "department": "Engineering"
-        }
+        { "id": 1, "email": "alice@gmail.com",    "display_name": "Alice Johnson", "role": "student",    "email_verified": true  },
+        { "id": 2, "email": "bob@company.com",    "display_name": "Bob Smith",     "role": "student",    "email_verified": false },
+        { "id": 3, "email": "carol@gmail.com",    "display_name": "Carol White",   "role": "instructor", "email_verified": true  },
+        { "id": 4, "email": "dave@yahoo.com",     "display_name": "Dave Brown",    "role": "student",    "email_verified": false },
+        { "id": 5, "email": "admin@platform.com", "display_name": "Admin User",    "role": "admin",      "email_verified": true  },
+        { "id": 6, "email": "eve@gmail.com",      "display_name": "Eve Davis",     "role": "student",    "email_verified": true  },
+        { "id": 7, "email": "frank@company.com",  "display_name": "Frank Miller",  "role": "instructor", "email_verified": false },
+        { "id": 8, "email": "grace@gmail.com",    "display_name": "Grace Wilson",  "role": "admin",      "email_verified": true  }
       ]
-    },
-    "createdAt": "2025-01-01T00:00:00.000Z",
-    "updatedAt": "2025-01-01T00:00:00.000Z"
+    }
   },
+
   {
-    "title": "Department-wise Employee Count",
-    "description": "Medium",
-    "question": "Find the number of employees in each department",
+    "title": "Find Admin Users",
+    "description": "easy",
+    "question": "The platform has three roles: student, instructor, and admin. Write a query to find all users with the 'admin' role. Return only their id, email, and display_name.",
     "sampleTables": [
       {
-        "tableName": "employees",
+        "tableName": "users",
         "columns": [
-          { "columnName": "id", "dataType": "INTEGER" },
-          { "columnName": "name", "dataType": "TEXT" },
-          { "columnName": "department", "dataType": "TEXT" }
+          { "columnName": "id", "dataType": "integer" },
+          { "columnName": "email", "dataType": "text" },
+          { "columnName": "display_name", "dataType": "text" },
+          { "columnName": "role", "dataType": "text" },
+          { "columnName": "email_verified", "dataType": "boolean" },
+          { "columnName": "image", "dataType": "text" }
         ],
         "rows": [
-          { "id": 1, "name": "Alice", "department": "HR" },
-          { "id": 2, "name": "Bob", "department": "Engineering" },
-          { "id": 3, "name": "Charlie", "department": "Engineering" },
-          { "id": 4, "name": "Diana", "department": "Sales" },
-          { "id": 5, "name": "Eve", "department": "Sales" }
+          { "id": 1, "email": "alice@gmail.com",    "display_name": "Alice Johnson", "role": "student",    "email_verified": true,  "image": "https://i.pravatar.cc/150?u=alice" },
+          { "id": 2, "email": "bob@company.com",    "display_name": "Bob Smith",     "role": "student",    "email_verified": false, "image": null },
+          { "id": 3, "email": "carol@gmail.com",    "display_name": "Carol White",   "role": "instructor", "email_verified": true,  "image": "https://i.pravatar.cc/150?u=carol" },
+          { "id": 4, "email": "dave@yahoo.com",     "display_name": "Dave Brown",    "role": "student",    "email_verified": false, "image": null },
+          { "id": 5, "email": "admin@platform.com", "display_name": "Admin User",    "role": "admin",      "email_verified": true,  "image": "https://i.pravatar.cc/150?u=admin" },
+          { "id": 6, "email": "eve@gmail.com",      "display_name": "Eve Davis",     "role": "student",    "email_verified": true,  "image": null },
+          { "id": 7, "email": "frank@company.com",  "display_name": "Frank Miller",  "role": "instructor", "email_verified": false, "image": null },
+          { "id": 8, "email": "grace@gmail.com",    "display_name": "Grace Wilson",  "role": "admin",      "email_verified": true,  "image": "https://i.pravatar.cc/150?u=grace" }
         ]
       }
     ],
     "expectedOutput": {
       "type": "table",
       "value": [
-        { "department": "HR", "count": 1 },
-        { "department": "Engineering", "count": 2 },
-        { "department": "Sales", "count": 2 }
+        { "id": 5, "email": "admin@platform.com", "display_name": "Admin User"   },
+        { "id": 8, "email": "grace@gmail.com",    "display_name": "Grace Wilson" }
       ]
-    },
-    "createdAt": "2025-01-01T00:00:00.000Z",
-    "updatedAt": "2025-01-01T00:00:00.000Z"
+    }
   },
+
   {
-    "title": "Total Order Value per Customer",
-    "description": "Medium",
-    "question": "Find total order value for each customer",
+    "title": "Count All Users",
+    "description": "easy",
+    "question": "Write a query to count the total number of rows in the users table. The result must have exactly one column named count.",
     "sampleTables": [
       {
-        "tableName": "customers",
+        "tableName": "users",
         "columns": [
-          { "columnName": "id", "dataType": "INTEGER" },
-          { "columnName": "name", "dataType": "TEXT" }
+          { "columnName": "id", "dataType": "integer" },
+          { "columnName": "email", "dataType": "text" },
+          { "columnName": "display_name", "dataType": "text" },
+          { "columnName": "role", "dataType": "text" },
+          { "columnName": "email_verified", "dataType": "boolean" }
         ],
         "rows": [
-          { "id": 1, "name": "Aman" },
-          { "id": 2, "name": "Saurabh" }
-        ]
-      },
-      {
-        "tableName": "orders",
-        "columns": [
-          { "columnName": "id", "dataType": "INTEGER" },
-          { "columnName": "customer_id", "dataType": "INTEGER" },
-          { "columnName": "amount", "dataType": "REAL" }
-        ],
-        "rows": [
-          { "id": 1, "customer_id": 1, "amount": 1200.5 },
-          { "id": 2, "customer_id": 1, "amount": 800.0 },
-          { "id": 3, "customer_id": 2, "amount": 1500.0 }
+          { "id": 1, "email": "alice@gmail.com",    "display_name": "Alice Johnson", "role": "student",    "email_verified": true  },
+          { "id": 2, "email": "bob@company.com",    "display_name": "Bob Smith",     "role": "student",    "email_verified": false },
+          { "id": 3, "email": "carol@gmail.com",    "display_name": "Carol White",   "role": "instructor", "email_verified": true  },
+          { "id": 4, "email": "dave@yahoo.com",     "display_name": "Dave Brown",    "role": "student",    "email_verified": false },
+          { "id": 5, "email": "admin@platform.com", "display_name": "Admin User",    "role": "admin",      "email_verified": true  },
+          { "id": 6, "email": "eve@gmail.com",      "display_name": "Eve Davis",     "role": "student",    "email_verified": true  },
+          { "id": 7, "email": "frank@company.com",  "display_name": "Frank Miller",  "role": "instructor", "email_verified": false },
+          { "id": 8, "email": "grace@gmail.com",    "display_name": "Grace Wilson",  "role": "admin",      "email_verified": true  }
         ]
       }
     ],
     "expectedOutput": {
-      "type": "table",
-      "value": [
-        { "name": "Aman", "total_amount": 2000.5 },
-        { "name": "Saurabh", "total_amount": 1500.0 }
-      ]
-    },
-    "createdAt": "2025-01-01T00:00:00.000Z",
-    "updatedAt": "2025-01-01T00:00:00.000Z"
+      "type": "count",
+      "value": 8
+    }
   },
+
   {
-    "title": "Highest Paid Employee",
-    "description": "Hard",
-    "question": "Find the employee(s) with the highest salary",
+    "title": "Find Email-Verified Users",
+    "description": "easy",
+    "question": "Write a query to find all users who have verified their email address (email_verified = true). Return only their email and display_name.",
     "sampleTables": [
       {
-        "tableName": "employees",
+        "tableName": "users",
         "columns": [
-          { "columnName": "id", "dataType": "INTEGER" },
-          { "columnName": "name", "dataType": "TEXT" },
-          { "columnName": "salary", "dataType": "INTEGER" }
+          { "columnName": "id", "dataType": "integer" },
+          { "columnName": "email", "dataType": "text" },
+          { "columnName": "display_name", "dataType": "text" },
+          { "columnName": "role", "dataType": "text" },
+          { "columnName": "email_verified", "dataType": "boolean" }
         ],
         "rows": [
-          { "id": 1, "name": "Alice", "salary": 70000 },
-          { "id": 2, "name": "Bob", "salary": 85000 },
-          { "id": 3, "name": "Charlie", "salary": 85000 }
+          { "id": 1, "email": "alice@gmail.com",    "display_name": "Alice Johnson", "role": "student",    "email_verified": true  },
+          { "id": 2, "email": "bob@company.com",    "display_name": "Bob Smith",     "role": "student",    "email_verified": false },
+          { "id": 3, "email": "carol@gmail.com",    "display_name": "Carol White",   "role": "instructor", "email_verified": true  },
+          { "id": 4, "email": "dave@yahoo.com",     "display_name": "Dave Brown",    "role": "student",    "email_verified": false },
+          { "id": 5, "email": "admin@platform.com", "display_name": "Admin User",    "role": "admin",      "email_verified": true  },
+          { "id": 6, "email": "eve@gmail.com",      "display_name": "Eve Davis",     "role": "student",    "email_verified": true  },
+          { "id": 7, "email": "frank@company.com",  "display_name": "Frank Miller",  "role": "instructor", "email_verified": false },
+          { "id": 8, "email": "grace@gmail.com",    "display_name": "Grace Wilson",  "role": "admin",      "email_verified": true  }
         ]
       }
     ],
     "expectedOutput": {
       "type": "table",
       "value": [
-        { "id": 2, "name": "Bob", "salary": 85000 },
-        { "id": 3, "name": "Charlie", "salary": 85000 }
+        { "email": "alice@gmail.com",    "display_name": "Alice Johnson" },
+        { "email": "carol@gmail.com",    "display_name": "Carol White"   },
+        { "email": "admin@platform.com", "display_name": "Admin User"    },
+        { "email": "eve@gmail.com",      "display_name": "Eve Davis"     },
+        { "email": "grace@gmail.com",    "display_name": "Grace Wilson"  }
       ]
-    },
-    "createdAt": "2025-01-01T00:00:00.000Z",
-    "updatedAt": "2025-01-01T00:00:00.000Z"
+    }
+  },
+
+  {
+    "title": "Find Gmail Users",
+    "description": "easy",
+    "question": "Write a query to find all users whose email address ends with '@gmail.com'. Return their id, email, and display_name.",
+    "sampleTables": [
+      {
+        "tableName": "users",
+        "columns": [
+          { "columnName": "id", "dataType": "integer" },
+          { "columnName": "email", "dataType": "text" },
+          { "columnName": "display_name", "dataType": "text" },
+          { "columnName": "role", "dataType": "text" },
+          { "columnName": "email_verified", "dataType": "boolean" }
+        ],
+        "rows": [
+          { "id": 1, "email": "alice@gmail.com",    "display_name": "Alice Johnson", "role": "student",    "email_verified": true  },
+          { "id": 2, "email": "bob@company.com",    "display_name": "Bob Smith",     "role": "student",    "email_verified": false },
+          { "id": 3, "email": "carol@gmail.com",    "display_name": "Carol White",   "role": "instructor", "email_verified": true  },
+          { "id": 4, "email": "dave@yahoo.com",     "display_name": "Dave Brown",    "role": "student",    "email_verified": false },
+          { "id": 5, "email": "admin@platform.com", "display_name": "Admin User",    "role": "admin",      "email_verified": true  },
+          { "id": 6, "email": "eve@gmail.com",      "display_name": "Eve Davis",     "role": "student",    "email_verified": true  },
+          { "id": 7, "email": "frank@company.com",  "display_name": "Frank Miller",  "role": "instructor", "email_verified": false },
+          { "id": 8, "email": "grace@gmail.com",    "display_name": "Grace Wilson",  "role": "admin",      "email_verified": true  }
+        ]
+      }
+    ],
+    "expectedOutput": {
+      "type": "table",
+      "value": [
+        { "id": 1, "email": "alice@gmail.com", "display_name": "Alice Johnson" },
+        { "id": 3, "email": "carol@gmail.com", "display_name": "Carol White"   },
+        { "id": 6, "email": "eve@gmail.com",   "display_name": "Eve Davis"     },
+        { "id": 8, "email": "grace@gmail.com", "display_name": "Grace Wilson"  }
+      ]
+    }
+  },
+
+  {
+    "title": "Find Unverified Users",
+    "description": "easy",
+    "question": "Write a query to find all users who have NOT yet verified their email address. Return their id, email, and role.",
+    "sampleTables": [
+      {
+        "tableName": "users",
+        "columns": [
+          { "columnName": "id", "dataType": "integer" },
+          { "columnName": "email", "dataType": "text" },
+          { "columnName": "display_name", "dataType": "text" },
+          { "columnName": "role", "dataType": "text" },
+          { "columnName": "email_verified", "dataType": "boolean" }
+        ],
+        "rows": [
+          { "id": 1, "email": "alice@gmail.com",   "display_name": "Alice Johnson", "role": "student",    "email_verified": true  },
+          { "id": 2, "email": "bob@company.com",   "display_name": "Bob Smith",     "role": "student",    "email_verified": false },
+          { "id": 3, "email": "carol@gmail.com",   "display_name": "Carol White",   "role": "instructor", "email_verified": true  },
+          { "id": 4, "email": "dave@yahoo.com",    "display_name": "Dave Brown",    "role": "student",    "email_verified": false },
+          { "id": 5, "email": "eve@gmail.com",     "display_name": "Eve Davis",     "role": "student",    "email_verified": true  },
+          { "id": 6, "email": "frank@company.com", "display_name": "Frank Miller",  "role": "instructor", "email_verified": false },
+          { "id": 7, "email": "grace@gmail.com",   "display_name": "Grace Wilson",  "role": "admin",      "email_verified": true  },
+          { "id": 8, "email": "henry@yahoo.com",   "display_name": "Henry Clark",   "role": "student",    "email_verified": false }
+        ]
+      }
+    ],
+    "expectedOutput": {
+      "type": "table",
+      "value": [
+        { "id": 2, "email": "bob@company.com",   "role": "student"     },
+        { "id": 4, "email": "dave@yahoo.com",    "role": "student"     },
+        { "id": 6, "email": "frank@company.com", "role": "instructor"  },
+        { "id": 8, "email": "henry@yahoo.com",   "role": "student"     }
+      ]
+    }
+  },
+
+  {
+    "title": "Count Users by Role",
+    "description": "medium",
+    "question": "Write a query to count how many users belong to each role. Return role and count. The column containing the count must be named count.",
+    "sampleTables": [
+      {
+        "tableName": "users",
+        "columns": [
+          { "columnName": "id", "dataType": "integer" },
+          { "columnName": "email", "dataType": "text" },
+          { "columnName": "display_name", "dataType": "text" },
+          { "columnName": "role", "dataType": "text" },
+          { "columnName": "email_verified", "dataType": "boolean" }
+        ],
+        "rows": [
+          { "id": 1, "email": "alice@gmail.com",    "display_name": "Alice Johnson", "role": "student",    "email_verified": true  },
+          { "id": 2, "email": "bob@company.com",    "display_name": "Bob Smith",     "role": "student",    "email_verified": false },
+          { "id": 3, "email": "carol@gmail.com",    "display_name": "Carol White",   "role": "instructor", "email_verified": true  },
+          { "id": 4, "email": "dave@yahoo.com",     "display_name": "Dave Brown",    "role": "student",    "email_verified": false },
+          { "id": 5, "email": "admin@platform.com", "display_name": "Admin User",    "role": "admin",      "email_verified": true  },
+          { "id": 6, "email": "eve@gmail.com",      "display_name": "Eve Davis",     "role": "student",    "email_verified": true  },
+          { "id": 7, "email": "frank@company.com",  "display_name": "Frank Miller",  "role": "instructor", "email_verified": false },
+          { "id": 8, "email": "grace@gmail.com",    "display_name": "Grace Wilson",  "role": "admin",      "email_verified": true  }
+        ]
+      }
+    ],
+    "expectedOutput": {
+      "type": "table",
+      "value": [
+        { "role": "student",    "count": 4 },
+        { "role": "admin",      "count": 2 },
+        { "role": "instructor", "count": 2 }
+      ]
+    }
+  },
+
+  {
+    "title": "Count Unverified Users",
+    "description": "easy",
+    "question": "Write a query to count how many users have NOT verified their email address. The result must have exactly one column named count.",
+    "sampleTables": [
+      {
+        "tableName": "users",
+        "columns": [
+          { "columnName": "id", "dataType": "integer" },
+          { "columnName": "email", "dataType": "text" },
+          { "columnName": "display_name", "dataType": "text" },
+          { "columnName": "role", "dataType": "text" },
+          { "columnName": "email_verified", "dataType": "boolean" }
+        ],
+        "rows": [
+          { "id": 1, "email": "alice@gmail.com",    "display_name": "Alice Johnson", "role": "student",    "email_verified": true  },
+          { "id": 2, "email": "bob@company.com",    "display_name": "Bob Smith",     "role": "student",    "email_verified": false },
+          { "id": 3, "email": "carol@gmail.com",    "display_name": "Carol White",   "role": "instructor", "email_verified": true  },
+          { "id": 4, "email": "dave@yahoo.com",     "display_name": "Dave Brown",    "role": "student",    "email_verified": false },
+          { "id": 5, "email": "admin@platform.com", "display_name": "Admin User",    "role": "admin",      "email_verified": true  },
+          { "id": 6, "email": "eve@gmail.com",      "display_name": "Eve Davis",     "role": "student",    "email_verified": true  },
+          { "id": 7, "email": "frank@company.com",  "display_name": "Frank Miller",  "role": "instructor", "email_verified": false },
+          { "id": 8, "email": "grace@gmail.com",    "display_name": "Grace Wilson",  "role": "admin",      "email_verified": true  }
+        ]
+      }
+    ],
+    "expectedOutput": {
+      "type": "count",
+      "value": 3
+    }
+  },
+
+  {
+    "title": "Find Users Without a Profile Picture",
+    "description": "easy",
+    "question": "Write a query to find all users who have not set a profile picture (the image column is NULL). Return their id, display_name, and email.",
+    "sampleTables": [
+      {
+        "tableName": "users",
+        "columns": [
+          { "columnName": "id", "dataType": "integer" },
+          { "columnName": "email", "dataType": "text" },
+          { "columnName": "display_name", "dataType": "text" },
+          { "columnName": "role", "dataType": "text" },
+          { "columnName": "email_verified", "dataType": "boolean" },
+          { "columnName": "image", "dataType": "text" }
+        ],
+        "rows": [
+          { "id": 1, "email": "alice@gmail.com",    "display_name": "Alice Johnson", "role": "student",    "email_verified": true,  "image": "https://i.pravatar.cc/150?u=alice" },
+          { "id": 2, "email": "bob@company.com",    "display_name": "Bob Smith",     "role": "student",    "email_verified": false, "image": null },
+          { "id": 3, "email": "carol@gmail.com",    "display_name": "Carol White",   "role": "instructor", "email_verified": true,  "image": "https://i.pravatar.cc/150?u=carol" },
+          { "id": 4, "email": "dave@yahoo.com",     "display_name": "Dave Brown",    "role": "student",    "email_verified": false, "image": null },
+          { "id": 5, "email": "admin@platform.com", "display_name": "Admin User",    "role": "admin",      "email_verified": true,  "image": "https://i.pravatar.cc/150?u=admin" },
+          { "id": 6, "email": "eve@gmail.com",      "display_name": "Eve Davis",     "role": "student",    "email_verified": true,  "image": null },
+          { "id": 7, "email": "frank@company.com",  "display_name": "Frank Miller",  "role": "instructor", "email_verified": false, "image": null },
+          { "id": 8, "email": "grace@gmail.com",    "display_name": "Grace Wilson",  "role": "admin",      "email_verified": true,  "image": "https://i.pravatar.cc/150?u=grace" }
+        ]
+      }
+    ],
+    "expectedOutput": {
+      "type": "table",
+      "value": [
+        { "id": 2, "display_name": "Bob Smith",    "email": "bob@company.com"   },
+        { "id": 4, "display_name": "Dave Brown",   "email": "dave@yahoo.com"    },
+        { "id": 6, "display_name": "Eve Davis",    "email": "eve@gmail.com"     },
+        { "id": 7, "display_name": "Frank Miller", "email": "frank@company.com" }
+      ]
+    }
+  },
+
+  {
+    "title": "Find Verified Instructors",
+    "description": "medium",
+    "question": "Write a query to find all users who are instructors AND have verified their email address. Return their id, email, and display_name.",
+    "sampleTables": [
+      {
+        "tableName": "users",
+        "columns": [
+          { "columnName": "id", "dataType": "integer" },
+          { "columnName": "email", "dataType": "text" },
+          { "columnName": "display_name", "dataType": "text" },
+          { "columnName": "role", "dataType": "text" },
+          { "columnName": "email_verified", "dataType": "boolean" }
+        ],
+        "rows": [
+          { "id": 1, "email": "alice@gmail.com",   "display_name": "Alice Johnson", "role": "student",    "email_verified": true  },
+          { "id": 2, "email": "bob@company.com",   "display_name": "Bob Smith",     "role": "student",    "email_verified": false },
+          { "id": 3, "email": "carol@gmail.com",   "display_name": "Carol White",   "role": "instructor", "email_verified": true  },
+          { "id": 4, "email": "dave@yahoo.com",    "display_name": "Dave Brown",    "role": "student",    "email_verified": false },
+          { "id": 5, "email": "eve@gmail.com",     "display_name": "Eve Davis",     "role": "instructor", "email_verified": false },
+          { "id": 6, "email": "frank@company.com", "display_name": "Frank Miller",  "role": "instructor", "email_verified": true  },
+          { "id": 7, "email": "grace@gmail.com",   "display_name": "Grace Wilson",  "role": "admin",      "email_verified": true  },
+          { "id": 8, "email": "henry@yahoo.com",   "display_name": "Henry Clark",   "role": "instructor", "email_verified": false }
+        ]
+      }
+    ],
+    "expectedOutput": {
+      "type": "table",
+      "value": [
+        { "id": 3, "email": "carol@gmail.com",   "display_name": "Carol White"  },
+        { "id": 6, "email": "frank@company.com", "display_name": "Frank Miller" }
+      ]
+    }
+  },
+
+  {
+    "title": "Verified vs Unverified Count",
+    "description": "medium",
+    "question": "Write a query to show how many users have verified their email and how many have not. Return email_verified and count. The column containing the count must be named count.",
+    "sampleTables": [
+      {
+        "tableName": "users",
+        "columns": [
+          { "columnName": "id", "dataType": "integer" },
+          { "columnName": "email", "dataType": "text" },
+          { "columnName": "display_name", "dataType": "text" },
+          { "columnName": "role", "dataType": "text" },
+          { "columnName": "email_verified", "dataType": "boolean" }
+        ],
+        "rows": [
+          { "id": 1, "email": "alice@gmail.com",    "display_name": "Alice Johnson", "role": "student",    "email_verified": true  },
+          { "id": 2, "email": "bob@company.com",    "display_name": "Bob Smith",     "role": "student",    "email_verified": false },
+          { "id": 3, "email": "carol@gmail.com",    "display_name": "Carol White",   "role": "instructor", "email_verified": true  },
+          { "id": 4, "email": "dave@yahoo.com",     "display_name": "Dave Brown",    "role": "student",    "email_verified": false },
+          { "id": 5, "email": "admin@platform.com", "display_name": "Admin User",    "role": "admin",      "email_verified": true  },
+          { "id": 6, "email": "eve@gmail.com",      "display_name": "Eve Davis",     "role": "student",    "email_verified": true  },
+          { "id": 7, "email": "frank@company.com",  "display_name": "Frank Miller",  "role": "instructor", "email_verified": false },
+          { "id": 8, "email": "grace@gmail.com",    "display_name": "Grace Wilson",  "role": "admin",      "email_verified": true  }
+        ]
+      }
+    ],
+    "expectedOutput": {
+      "type": "table",
+      "value": [
+        { "email_verified": false, "count": 3 },
+        { "email_verified": true,  "count": 5 }
+      ]
+    }
+  },
+
+  {
+    "title": "Find Student Gmail Users",
+    "description": "medium",
+    "question": "Write a query to find all users who are students AND use a Gmail address (email ends with '@gmail.com'). Return their id, email, and display_name.",
+    "sampleTables": [
+      {
+        "tableName": "users",
+        "columns": [
+          { "columnName": "id", "dataType": "integer" },
+          { "columnName": "email", "dataType": "text" },
+          { "columnName": "display_name", "dataType": "text" },
+          { "columnName": "role", "dataType": "text" },
+          { "columnName": "email_verified", "dataType": "boolean" }
+        ],
+        "rows": [
+          { "id": 1, "email": "alice@gmail.com",   "display_name": "Alice Johnson", "role": "student",    "email_verified": true  },
+          { "id": 2, "email": "bob@company.com",   "display_name": "Bob Smith",     "role": "student",    "email_verified": false },
+          { "id": 3, "email": "carol@gmail.com",   "display_name": "Carol White",   "role": "instructor", "email_verified": true  },
+          { "id": 4, "email": "dave@yahoo.com",    "display_name": "Dave Brown",    "role": "student",    "email_verified": false },
+          { "id": 5, "email": "eve@gmail.com",     "display_name": "Eve Davis",     "role": "student",    "email_verified": true  },
+          { "id": 6, "email": "frank@gmail.com",   "display_name": "Frank Miller",  "role": "instructor", "email_verified": false },
+          { "id": 7, "email": "grace@gmail.com",   "display_name": "Grace Wilson",  "role": "student",    "email_verified": true  },
+          { "id": 8, "email": "henry@yahoo.com",   "display_name": "Henry Clark",   "role": "admin",      "email_verified": true  }
+        ]
+      }
+    ],
+    "expectedOutput": {
+      "type": "table",
+      "value": [
+        { "id": 1, "email": "alice@gmail.com", "display_name": "Alice Johnson" },
+        { "id": 5, "email": "eve@gmail.com",   "display_name": "Eve Davis"     },
+        { "id": 7, "email": "grace@gmail.com", "display_name": "Grace Wilson"  }
+      ]
+    }
+  },
+
+  {
+    "title": "Find Duplicate Emails",
+    "description": "medium",
+    "question": "Some users attempted to register multiple times with the same email. Write a query to find all email addresses that appear more than once in the users table. Return only the email column.",
+    "sampleTables": [
+      {
+        "tableName": "users",
+        "columns": [
+          { "columnName": "id", "dataType": "integer" },
+          { "columnName": "email", "dataType": "text" },
+          { "columnName": "display_name", "dataType": "text" }
+        ],
+        "rows": [
+          { "id": 1,  "email": "alice@example.com", "display_name": "Alice A"   },
+          { "id": 2,  "email": "bob@example.com",   "display_name": "Bob B"     },
+          { "id": 3,  "email": "alice@example.com", "display_name": "Alice Alt" },
+          { "id": 4,  "email": "carol@example.com", "display_name": "Carol C"   },
+          { "id": 5,  "email": "bob@example.com",   "display_name": "Bob Jones" },
+          { "id": 6,  "email": "dave@example.com",  "display_name": "Dave D"    },
+          { "id": 7,  "email": "eve@example.com",   "display_name": "Eve E"     },
+          { "id": 8,  "email": "alice@example.com", "display_name": "Alice III" },
+          { "id": 9,  "email": "frank@example.com", "display_name": "Frank F"   },
+          { "id": 10, "email": "bob@example.com",   "display_name": "Bob III"   }
+        ]
+      }
+    ],
+    "expectedOutput": {
+      "type": "table",
+      "value": [
+        { "email": "alice@example.com" },
+        { "email": "bob@example.com"   }
+      ]
+    }
+  },
+
+  {
+    "title": "Find Users with Corporate Emails",
+    "description": "medium",
+    "question": "Your company uses '@company.com' and '@corp.org' as corporate email domains. Write a query to find all users whose email ends with either '@company.com' or '@corp.org'. Return their id, email, display_name, and role.",
+    "sampleTables": [
+      {
+        "tableName": "users",
+        "columns": [
+          { "columnName": "id", "dataType": "integer" },
+          { "columnName": "email", "dataType": "text" },
+          { "columnName": "display_name", "dataType": "text" },
+          { "columnName": "role", "dataType": "text" },
+          { "columnName": "email_verified", "dataType": "boolean" }
+        ],
+        "rows": [
+          { "id": 1, "email": "alice@gmail.com",   "display_name": "Alice Johnson", "role": "student",    "email_verified": true  },
+          { "id": 2, "email": "bob@company.com",   "display_name": "Bob Smith",     "role": "instructor", "email_verified": true  },
+          { "id": 3, "email": "carol@yahoo.com",   "display_name": "Carol White",   "role": "student",    "email_verified": false },
+          { "id": 4, "email": "dave@corp.org",     "display_name": "Dave Brown",    "role": "instructor", "email_verified": true  },
+          { "id": 5, "email": "eve@gmail.com",     "display_name": "Eve Davis",     "role": "student",    "email_verified": true  },
+          { "id": 6, "email": "frank@company.com", "display_name": "Frank Miller",  "role": "admin",      "email_verified": true  },
+          { "id": 7, "email": "grace@hotmail.com", "display_name": "Grace Wilson",  "role": "student",    "email_verified": false },
+          { "id": 8, "email": "henry@corp.org",    "display_name": "Henry Clark",   "role": "student",    "email_verified": false }
+        ]
+      }
+    ],
+    "expectedOutput": {
+      "type": "table",
+      "value": [
+        { "id": 2, "email": "bob@company.com",   "display_name": "Bob Smith",    "role": "instructor" },
+        { "id": 4, "email": "dave@corp.org",     "display_name": "Dave Brown",   "role": "instructor" },
+        { "id": 6, "email": "frank@company.com", "display_name": "Frank Miller", "role": "admin"      },
+        { "id": 8, "email": "henry@corp.org",    "display_name": "Henry Clark",  "role": "student"    }
+      ]
+    }
+  },
+
+  {
+    "title": "Find the User with the Highest ID",
+    "description": "medium",
+    "question": "Write a query to find the single user with the highest id value. Return their id, email, and display_name. Your query must return exactly one row.",
+    "sampleTables": [
+      {
+        "tableName": "users",
+        "columns": [
+          { "columnName": "id", "dataType": "integer" },
+          { "columnName": "email", "dataType": "text" },
+          { "columnName": "display_name", "dataType": "text" },
+          { "columnName": "role", "dataType": "text" },
+          { "columnName": "email_verified", "dataType": "boolean" }
+        ],
+        "rows": [
+          { "id": 1, "email": "alice@gmail.com",   "display_name": "Alice Johnson", "role": "student",    "email_verified": true  },
+          { "id": 2, "email": "bob@company.com",   "display_name": "Bob Smith",     "role": "student",    "email_verified": false },
+          { "id": 3, "email": "carol@gmail.com",   "display_name": "Carol White",   "role": "instructor", "email_verified": true  },
+          { "id": 4, "email": "dave@yahoo.com",    "display_name": "Dave Brown",    "role": "student",    "email_verified": false },
+          { "id": 5, "email": "eve@gmail.com",     "display_name": "Eve Davis",     "role": "student",    "email_verified": true  },
+          { "id": 6, "email": "frank@company.com", "display_name": "Frank Miller",  "role": "instructor", "email_verified": false },
+          { "id": 7, "email": "grace@gmail.com",   "display_name": "Grace Wilson",  "role": "admin",      "email_verified": true  }
+        ]
+      }
+    ],
+    "expectedOutput": {
+      "type": "row",
+      "value": { "id": 7, "email": "grace@gmail.com", "display_name": "Grace Wilson" }
+    }
+  },
+
+  {
+    "title": "Count Users per Role (Verified Only)",
+    "description": "hard",
+    "question": "Write a query that counts how many verified users (email_verified = true) exist for each role. Only include roles that have at least 2 verified users. Return role and count, where count is the column name for the number of verified users.",
+    "sampleTables": [
+      {
+        "tableName": "users",
+        "columns": [
+          { "columnName": "id", "dataType": "integer" },
+          { "columnName": "email", "dataType": "text" },
+          { "columnName": "display_name", "dataType": "text" },
+          { "columnName": "role", "dataType": "text" },
+          { "columnName": "email_verified", "dataType": "boolean" }
+        ],
+        "rows": [
+          { "id": 1,  "email": "alice@gmail.com",    "display_name": "Alice",   "role": "student",    "email_verified": true  },
+          { "id": 2,  "email": "bob@gmail.com",      "display_name": "Bob",     "role": "student",    "email_verified": true  },
+          { "id": 3,  "email": "carol@gmail.com",    "display_name": "Carol",   "role": "student",    "email_verified": false },
+          { "id": 4,  "email": "dave@gmail.com",     "display_name": "Dave",    "role": "student",    "email_verified": true  },
+          { "id": 5,  "email": "eve@gmail.com",      "display_name": "Eve",     "role": "instructor", "email_verified": true  },
+          { "id": 6,  "email": "frank@gmail.com",    "display_name": "Frank",   "role": "instructor", "email_verified": false },
+          { "id": 7,  "email": "grace@gmail.com",    "display_name": "Grace",   "role": "instructor", "email_verified": true  },
+          { "id": 8,  "email": "henry@gmail.com",    "display_name": "Henry",   "role": "admin",      "email_verified": true  },
+          { "id": 9,  "email": "iris@gmail.com",     "display_name": "Iris",    "role": "admin",      "email_verified": false },
+          { "id": 10, "email": "jack@gmail.com",     "display_name": "Jack",    "role": "admin",      "email_verified": false }
+        ]
+      }
+    ],
+    "expectedOutput": {
+      "type": "table",
+      "value": [
+        { "role": "student",    "count": 3 },
+        { "role": "instructor", "count": 2 }
+      ]
+    }
   }
 ]

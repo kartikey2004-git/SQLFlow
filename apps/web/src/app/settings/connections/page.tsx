@@ -63,23 +63,23 @@ export default function ConnectionsSettingsPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h2 className="text-lg font-medium text-white">Connected accounts</h2>
+      <h2 className="text-lg font-medium text-neutral-900">Connected accounts</h2>
       {error && (
-        <Alert variant="destructive" className="border-red-900/50 bg-red-950/40">
-          <AlertDescription className="text-red-300">{error}</AlertDescription>
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
       {accounts === null ? (
-        <p className="text-sm text-gray-400">Loading...</p>
+        <p className="text-sm text-neutral-500">Loading...</p>
       ) : (
         <ul className="flex flex-col gap-3">
           {accounts.map((account) => (
             <li
               key={account.id}
-              className="flex items-center justify-between rounded-md border border-surface-dark-border bg-surface-dark-alt px-4 py-3"
+              className="flex items-center justify-between rounded-md border border-neutral-200 bg-neutral-50 px-4 py-3"
             >
               <div className="flex items-center gap-2">
-                <span className="text-sm text-white">
+                <span className="text-sm text-neutral-900">
                   {PROVIDER_LABELS[account.providerId] ?? account.providerId}
                 </span>
                 <Badge variant="secondary">Connected</Badge>
@@ -103,9 +103,9 @@ export default function ConnectionsSettingsPage() {
             .map((provider) => (
               <li
                 key={provider}
-                className="flex items-center justify-between rounded-md border border-dashed border-surface-dark-border px-4 py-3"
+                className="flex items-center justify-between rounded-md border border-dashed border-neutral-200 px-4 py-3"
               >
-                <span className="text-sm text-gray-400">{PROVIDER_LABELS[provider]}</span>
+                <span className="text-sm text-neutral-500">{PROVIDER_LABELS[provider]}</span>
                 <Button
                   type="button"
                   size="sm"

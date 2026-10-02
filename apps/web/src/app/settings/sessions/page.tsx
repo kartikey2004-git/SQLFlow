@@ -83,7 +83,7 @@ export default function SessionsSettingsPage() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-medium text-white">Active sessions</h2>
+        <h2 className="text-lg font-medium text-neutral-900">Active sessions</h2>
         {(sessions?.length ?? 0) > 1 && (
           <Button type="button" size="sm" variant="outline" disabled={revokingOthers} onClick={handleRevokeOthers}>
             Log out all other devices
@@ -91,12 +91,12 @@ export default function SessionsSettingsPage() {
         )}
       </div>
       {error && (
-        <Alert variant="destructive" className="border-red-900/50 bg-red-950/40">
-          <AlertDescription className="text-red-300">{error}</AlertDescription>
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
       {sessions === null ? (
-        <p className="text-sm text-gray-400">Loading...</p>
+        <p className="text-sm text-neutral-500">Loading...</p>
       ) : (
         <ul className="flex flex-col gap-3">
           {sessions.map((session) => {
@@ -104,14 +104,14 @@ export default function SessionsSettingsPage() {
             return (
               <li
                 key={session.id}
-                className="flex items-center justify-between rounded-md border border-surface-dark-border bg-surface-dark-alt px-4 py-3"
+                className="flex items-center justify-between rounded-md border border-neutral-200 bg-neutral-50 px-4 py-3"
               >
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-white">{describeUserAgent(session.userAgent)}</span>
-                    {isCurrent && <Badge>Current session</Badge>}
+                    <span className="text-sm text-neutral-900">{describeUserAgent(session.userAgent)}</span>
+                    {isCurrent && <Badge variant="secondary">Current session</Badge>}
                   </div>
-                  <span className="text-xs text-gray-400">
+                  <span className="text-xs text-neutral-500">
                     {session.ipAddress ? `${session.ipAddress} · ` : ""}
                     Last active {session.updatedAt.toLocaleString()}
                   </span>

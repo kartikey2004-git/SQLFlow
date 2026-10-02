@@ -10,8 +10,6 @@ import { Label } from "@sql-learn/ui/components/label";
 import { Alert, AlertDescription } from "@sql-learn/ui/components/alert";
 import { Separator } from "@sql-learn/ui/components/separator";
 
-const darkInputClass = "border-surface-dark-border bg-surface-dark-alt text-white";
-
 export default function AccountSettingsPage() {
   const router = useRouter();
   const { user, refresh, logout } = useAuth();
@@ -84,39 +82,38 @@ export default function AccountSettingsPage() {
   return (
     <div className="flex flex-col gap-10">
       <form onSubmit={handleNameSubmit} className="flex flex-col gap-3">
-        <h2 className="text-lg font-medium text-white">Profile</h2>
-        {nameStatus && <p className="text-sm text-gray-400">{nameStatus}</p>}
+        <h2 className="text-lg font-medium text-neutral-900">Profile</h2>
+        {nameStatus && <p className="text-sm text-neutral-500">{nameStatus}</p>}
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="displayName" className="text-gray-300">
+          <Label htmlFor="displayName" className="text-neutral-700">
             Display name
           </Label>
           <Input
             id="displayName"
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
-            className={darkInputClass}
           />
         </div>
         <div>
-          <Label className="text-gray-300">Email</Label>
-          <p className="text-sm text-gray-400">{user?.email}</p>
+          <Label className="text-neutral-700">Email</Label>
+          <p className="mt-1 text-sm text-neutral-500">{user?.email}</p>
         </div>
         <Button type="submit" disabled={nameSubmitting} className="w-fit">
           Save
         </Button>
       </form>
 
-      <Separator className="bg-surface-dark-border" />
+      <Separator />
 
       <form onSubmit={handlePasswordSubmit} className="flex flex-col gap-3">
-        <h2 className="text-lg font-medium text-white">Change password</h2>
+        <h2 className="text-lg font-medium text-neutral-900">Change password</h2>
         {passwordStatus && (
-          <Alert className="border-surface-dark-border bg-surface-dark-alt">
-            <AlertDescription className="text-gray-300">{passwordStatus}</AlertDescription>
+          <Alert>
+            <AlertDescription>{passwordStatus}</AlertDescription>
           </Alert>
         )}
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="currentPassword" className="text-gray-300">
+          <Label htmlFor="currentPassword" className="text-neutral-700">
             Current password
           </Label>
           <Input
@@ -125,11 +122,10 @@ export default function AccountSettingsPage() {
             required
             value={currentPassword}
             onChange={(e) => setCurrentPassword(e.target.value)}
-            className={darkInputClass}
           />
         </div>
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="newPassword" className="text-gray-300">
+          <Label htmlFor="newPassword" className="text-neutral-700">
             New password
           </Label>
           <Input
@@ -139,7 +135,6 @@ export default function AccountSettingsPage() {
             minLength={8}
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
-            className={darkInputClass}
           />
         </div>
         <Button type="submit" disabled={passwordSubmitting} className="w-fit">
@@ -147,22 +142,22 @@ export default function AccountSettingsPage() {
         </Button>
       </form>
 
-      <Separator className="bg-surface-dark-border" />
+      <Separator />
 
       <div className="flex flex-col gap-3">
-        <h2 className="text-lg font-medium text-red-400">Delete account</h2>
-        <p className="text-sm text-gray-400">
+        <h2 className="text-lg font-medium text-red-600">Delete account</h2>
+        <p className="text-sm text-neutral-500">
           This permanently deletes your account and cannot be undone.
         </p>
         {deleteError && (
-          <Alert variant="destructive" className="border-red-900/50 bg-red-950/40">
-            <AlertDescription className="text-red-300">{deleteError}</AlertDescription>
+          <Alert variant="destructive">
+            <AlertDescription>{deleteError}</AlertDescription>
           </Alert>
         )}
         {confirmingDelete ? (
           <div className="flex flex-col gap-3">
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="deletePassword" className="text-gray-300">
+              <Label htmlFor="deletePassword" className="text-neutral-700">
                 Confirm your password to delete your account
               </Label>
               <Input
@@ -170,7 +165,6 @@ export default function AccountSettingsPage() {
                 type="password"
                 value={deletePassword}
                 onChange={(e) => setDeletePassword(e.target.value)}
-                className={darkInputClass}
               />
             </div>
             <div className="flex gap-2">

@@ -15,23 +15,23 @@ export default function NavBar() {
   };
 
   return (
-    <nav className="flex items-center justify-between border-b border-surface-dark-border bg-surface-dark px-8 py-4 text-gray-200">
-      <Link href="/" className="text-[1.1rem] font-semibold text-white">
+    <nav className="flex items-center justify-between border-b border-neutral-200 bg-white px-8 py-4 text-neutral-900">
+      <Link href="/" className="text-[1.1rem] font-semibold text-neutral-900">
         SQL Learn
       </Link>
       <div className="flex items-center gap-4">
         {loading ? null : user ? (
           <>
-            <Link href="/settings/account" className="text-sm text-gray-300 hover:text-white">
+            <Link href="/settings/account" className="text-sm text-neutral-600 hover:text-neutral-900">
               {user.displayName}
             </Link>
-            <Button size="sm" onClick={handleLogout}>
+            <Button size="sm" variant="outline" onClick={handleLogout}>
               Log out
             </Button>
           </>
         ) : (
           <>
-            <Link href="/login" className="text-sm text-gray-300 hover:text-white">
+            <Link href="/login" className="text-sm text-neutral-600 hover:text-neutral-900">
               Log in
             </Link>
             <Button size="sm" asChild>

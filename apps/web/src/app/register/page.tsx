@@ -10,8 +10,6 @@ import { Input } from "@sql-learn/ui/components/input";
 import { Label } from "@sql-learn/ui/components/label";
 import { Alert, AlertDescription } from "@sql-learn/ui/components/alert";
 
-const darkInputClass = "border-surface-dark-border bg-surface-dark-alt text-white";
-
 export default function RegisterPage() {
   const router = useRouter();
   const { refresh } = useAuth();
@@ -47,16 +45,19 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="flex min-h-[calc(100vh-65px)] items-center justify-center bg-surface-dark p-8">
-      <form className="flex w-full max-w-[360px] flex-col gap-4" onSubmit={handleSubmit}>
-        <h1 className="mb-2 text-2xl font-semibold text-white">Create an account</h1>
+    <div className="flex min-h-[calc(100vh-65px)] items-center justify-center bg-neutral-50 p-8">
+      <form
+        className="flex w-full max-w-[360px] flex-col gap-4 rounded-lg border border-neutral-200 bg-white p-8 shadow-sm"
+        onSubmit={handleSubmit}
+      >
+        <h1 className="mb-2 text-2xl font-semibold text-neutral-900">Create an account</h1>
         {error && (
-          <Alert variant="destructive" className="border-red-900/50 bg-red-950/40">
-            <AlertDescription className="text-red-300">{error}</AlertDescription>
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="displayName" className="text-gray-300">
+          <Label htmlFor="displayName" className="text-neutral-700">
             Display name
           </Label>
           <Input
@@ -65,24 +66,16 @@ export default function RegisterPage() {
             required
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
-            className={darkInputClass}
           />
         </div>
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="email" className="text-gray-300">
+          <Label htmlFor="email" className="text-neutral-700">
             Email
           </Label>
-          <Input
-            id="email"
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className={darkInputClass}
-          />
+          <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
         </div>
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="password" className="text-gray-300">
+          <Label htmlFor="password" className="text-neutral-700">
             Password
           </Label>
           <Input
@@ -92,7 +85,6 @@ export default function RegisterPage() {
             minLength={8}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className={darkInputClass}
           />
         </div>
         <Button type="submit" disabled={submitting} className="mt-2">
@@ -106,9 +98,9 @@ export default function RegisterPage() {
             Continue with GitHub
           </Button>
         </div>
-        <p className="text-center text-sm text-gray-400">
+        <p className="text-center text-sm text-neutral-500">
           Already have an account?{" "}
-          <Link href="/login" className="text-blue-400 hover:underline">
+          <Link href="/login" className="text-blue-600 hover:underline">
             Log in
           </Link>
         </p>
