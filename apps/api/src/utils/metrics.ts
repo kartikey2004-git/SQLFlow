@@ -40,6 +40,7 @@ new Gauge({
       this.set({ state: "active" }, queue.activeCount);
       this.set({ state: "failed" }, queue.failedCount);
     } catch {
+      return;
     }
   },
 });

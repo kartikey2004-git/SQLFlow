@@ -13,6 +13,7 @@ export const closeAllStreams = () => {
       res.write(`event: shutdown\ndata: {}\n\n`);
       res.end();
     } catch {
+      streams.delete(res);
     }
   }
   streams.clear();
