@@ -64,6 +64,12 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      - name: Generate Prisma client
+        working-directory: packages/database
+        env:
+          DIRECT_URL: postgres://build:build@localhost:5432/build
+        run: bun run db:generate
+
       - name: Cache turbo
         uses: actions/cache@v4
         with:

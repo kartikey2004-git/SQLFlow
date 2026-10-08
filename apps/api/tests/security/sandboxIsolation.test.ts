@@ -53,12 +53,12 @@ describe("Student isolation (database + role per student)", () => {
     ["DROP DATABASE", "DROP DATABASE postgres"],
     ["COPY PROGRAM", "COPY (SELECT 1) TO PROGRAM 'id'"],
     ["COPY FILE", "COPY (SELECT 1) TO '/tmp/x'"],
-    ["pg_read_file", "SELECT pg_read_file('/etc/passwd')"],
+    ["pg_read_file", "SELECT pg_read_file('/etc/hostname')"],
     ["pg_ls_dir", "SELECT pg_ls_dir('/')"],
     ["pg_terminate_backend", "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE pid <> pg_backend_pid()"],
     ["ALTER SYSTEM", "ALTER SYSTEM SET work_mem = '1GB'"],
     ["CREATE EXTENSION (untrusted)", "CREATE EXTENSION file_fdw"],
-    ["lo_import", "SELECT lo_import('/etc/passwd')"],
+    ["lo_import", "SELECT lo_import('/etc/hostname')"],
     ["GRANT predefined role", "GRANT pg_read_server_files TO CURRENT_USER"],
   ];
   for (const [name, sql] of forbidden) {
