@@ -141,7 +141,3 @@ p50, p95, p99, RPS, and error counts as JSON.
 node loadtest/run.mjs --base https://api.example.com --origin https://app.example.com --stages 10,50 --stage-seconds 60 --out result.json
 k6 run -e BASE_URL=https://api.example.com -e ORIGIN=https://app.example.com loadtest/k6-sqlflow.js
 ```
-
-**Capacity numbers must be measured.** This repo makes no claim about how many concurrent students the deployment supports until
-you run these tests against a production-like environment and record the environment with the results. Per-user and per-IP rate limits,
-and Better Auth's sign-up limits, return 429 when one machine simulates many users, so those results measure the limiter as well.
