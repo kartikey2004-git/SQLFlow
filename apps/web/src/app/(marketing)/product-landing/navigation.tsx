@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, useId } from "react";
 import { Button } from "@sql-learn/ui/components/button";
 import { cn } from "@sql-learn/ui/lib/utils";
 import { navigation } from "../data";
-import { WAITLIST_FORM_URL } from "../data/conversion/waitlist";
+import { AuthGuardLink } from "@/components/auth/auth-guard-link";
 import { HashLink } from "./hash-link";
 import { Container, Icon } from "./primitives";
 
@@ -68,9 +68,6 @@ export function MarketingNavigation() {
       data-site-header=""
       className={cn(
         "sticky top-0 z-50 border-b transition-colors duration-300",
-        isPresent
-          ? "border-border bg-background/80 backdrop-blur-xl"
-          : "border-transparent bg-background/0 backdrop-blur-sm",
       )}
     >
       <Container className="flex h-16 items-center justify-between md:h-[72px]">
@@ -103,9 +100,9 @@ export function MarketingNavigation() {
               size="sm"
               className="hidden sm:inline-flex rounded-none"
             >
-              <a href={WAITLIST_FORM_URL} target="_blank" rel="noopener noreferrer">
+              <AuthGuardLink href="/assignments">
                 {cta.label}
-              </a>
+              </AuthGuardLink>
             </Button>
           ) : null}
 
@@ -140,14 +137,9 @@ export function MarketingNavigation() {
 
             {cta ? (
               <Button asChild className="mt-3 w-full rounded-none">
-                <a
-                  href={WAITLIST_FORM_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={closeMenu}
-                >
+                <AuthGuardLink href="/assignments" onClick={closeMenu}>
                   {cta.label}
-                </a>
+                </AuthGuardLink>
               </Button>
             ) : null}
           </Container>

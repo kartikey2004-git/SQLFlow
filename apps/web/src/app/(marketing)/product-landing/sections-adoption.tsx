@@ -10,7 +10,7 @@ import {
 
 export function UseCasesSection() {
   return (
-    <Section id={useCases.id} className="border-t border-border">
+    <Section id={useCases.id}>
       <Container className="flex flex-col gap-16">
         <SectionHeading eyebrow={useCases.eyebrow} title={useCases.title} />
 
@@ -33,7 +33,7 @@ export function DevelopersSection() {
   return (
     <Section
       id={developerExperience.id}
-      className="border-t border-border"
+     
       density="feature"
     >
       <Container size="wide">
@@ -47,7 +47,7 @@ export function DevelopersSection() {
         />
 
         <div className="mt-14 grid items-start gap-12 lg:grid-cols-2 lg:gap-16">
-          {/* LEFT */}
+          {}
           <div className="flex flex-col gap-9">
             {developerExperience.principles.map((principle, index) => (
               <div
@@ -71,8 +71,8 @@ export function DevelopersSection() {
             ))}
           </div>
 
-          {/* RIGHT */}
-          <div className="flex flex-col lg:-mt-56">
+          {}
+          <div className="flex flex-col lg:-mt-40">
             <div className="flex flex-col gap-2">
               <Eyebrow><p className="p-2">{decisionEngine.eyebrow}</p></Eyebrow>
 

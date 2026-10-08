@@ -5,9 +5,6 @@ import { ApiError } from "../utils/ApiError";
 import { asyncHandler } from "../utils/asyncHandler";
 import { CleanupService } from "../services/cleanup/cleanup.service";
 
-// index.ts refuses to start if CLEANUP_TOKEN is unset, so this is always a
-// non-empty string here - the old code compared against `undefined` and
-// failed OPEN when the env var was missing.
 const requireCleanupAuth = (req: Request): void => {
   const provided = req.headers["x-cleanup-authorization"];
   const expected = process.env.CLEANUP_TOKEN!;

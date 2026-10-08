@@ -1,25 +1,41 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
+import { Loader2 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { useAuth } from "@/context/AuthContext";
+import {
+  AuthDivider,
+  AuthError,
+  AuthField,
+  AuthShell,
+  PasswordInput,
+  SocialButtons,
+} from "@/components/auth/auth-ui";
 import { Button } from "@sql-learn/ui/components/button";
 import { Input } from "@sql-learn/ui/components/input";
-import { Label } from "@sql-learn/ui/components/label";
-import { Alert, AlertDescription } from "@sql-learn/ui/components/alert";
+
+const absoluteCallback = (path: string) => {
+  const url = new URL(path, window.location.origin);
+  return url.origin === window.location.origin ? url.toString() : `${window.location.origin}/assignments`;
+};
 
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { refresh } = useAuth();
+  const { user, loading: authLoading, refresh } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   const nextPath = searchParams.get("next") || "/assignments";
+  const invalid = error !== null;
+
+  useEffect(() => {
+    if (!authLoading && user) router.replace(nextPath);
+  }, [authLoading, user, nextPath, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,69 +44,78 @@ function LoginForm() {
     try {
       const { error: signInError } = await authClient.signIn.email({ email, password });
       if (signInError) {
-        setError(signInError.message ?? "Failed to log in");
+        setError(signInError.message ?? "Failed to log in. Check your email and password.");
         return;
       }
       await refresh();
       router.push(nextPath);
+    } catch {
+      setError("Something went wrong. Please try again.");
     } finally {
       setSubmitting(false);
     }
   };
 
   const handleSocial = async (provider: "google" | "github") => {
-    await authClient.signIn.social({ provider, callbackURL: nextPath });
+    setError(null);
+    try {
+      await authClient.signIn.social({ provider, callbackURL: absoluteCallback(nextPath) });
+    } catch {
+      setError(`Could not start ${provider === "google" ? "Google" : "GitHub"} sign-in. Try again.`);
+    }
   };
 
+  if (!authLoading && user) return null;
+
   return (
-    <div className="flex min-h-[calc(100vh-65px)] items-center justify-center bg-neutral-50 p-8">
-      <form
-        className="flex w-full max-w-[360px] flex-col gap-4 rounded-lg border border-neutral-200 bg-white p-8 shadow-sm"
-        onSubmit={handleSubmit}
-      >
-        <h1 className="mb-2 text-2xl font-semibold text-neutral-900">Log in</h1>
-        {error && (
-          <Alert variant="destructive">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="email" className="text-neutral-700">
-            Email
-          </Label>
-          <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="password" className="text-neutral-700">
-            Password
-          </Label>
+    <AuthShell mode="login" title="Welcome back" subtitle="Log in to pick up where you left off.">
+      <form className="flex flex-col gap-5" onSubmit={handleSubmit} aria-busy={submitting} noValidate={false}>
+        {error && <AuthError message={error} />}
+
+        <AuthField id="email" label="Email">
           <Input
-            id="password"
-            type="password"
+            id="email"
+            type="email"
+            name="email"
+            autoComplete="email"
+            autoFocus
             required
+            disabled={submitting}
+            aria-invalid={invalid || undefined}
+            placeholder="you@example.com"
+            className="h-10"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+        </AuthField>
+
+        <AuthField id="password" label="Password">
+          <PasswordInput
+            id="password"
+            name="password"
+            autoComplete="current-password"
+            required
+            disabled={submitting}
+            aria-invalid={invalid || undefined}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-        </div>
-        <Button type="submit" disabled={submitting} className="mt-2">
+        </AuthField>
+
+        <Button type="submit" size="lg" disabled={submitting} className="h-10 w-full">
+          {submitting && <Loader2 className="animate-spin" />}
           {submitting ? "Logging in..." : "Log in"}
         </Button>
-        <div className="flex flex-col gap-2">
-          <Button type="button" variant="outline" onClick={() => handleSocial("google")}>
-            Continue with Google
-          </Button>
-          <Button type="button" variant="outline" onClick={() => handleSocial("github")}>
-            Continue with GitHub
-          </Button>
-        </div>
-        <p className="text-center text-sm text-neutral-500">
-          Don&apos;t have an account?{" "}
-          <Link href="/register" className="text-blue-600 hover:underline">
-            Sign up
-          </Link>
+
+        <p role="status" aria-live="polite" className="sr-only">
+          {submitting ? "Logging in, please wait." : ""}
         </p>
+
+        <AuthDivider />
+
+        <SocialButtons disabled={submitting} onSelect={handleSocial} />
       </form>
-    </div>
+    </AuthShell>
   );
 }
 

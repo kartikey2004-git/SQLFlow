@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { ComparatorService } from "../../src/services/grading/comparator.service";
 import { NormalizerService } from "../../src/services/grading/normalizer.service";
-import type { QueryResult } from "../../src/services/sandbox/execution.service";
+import type { TableResult as QueryResult } from "../../src/services/sandbox/tableResult";
 
 const actual = (rows: Record<string, unknown>[]) =>
   NormalizerService.normalizeQueryResult({

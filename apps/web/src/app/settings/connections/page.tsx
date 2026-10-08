@@ -56,7 +56,7 @@ export default function ConnectionsSettingsPage() {
   const handleLink = async (provider: "google" | "github") => {
     setError(null);
     setBusyProviderId(provider);
-    await authClient.linkSocial({ provider, callbackURL: "/settings/connections" });
+    await authClient.linkSocial({ provider, callbackURL: `${window.location.origin}/settings/connections` });
   };
 
   const connectedProviderIds = new Set((accounts ?? []).map((a) => a.providerId));

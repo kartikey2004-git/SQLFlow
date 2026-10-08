@@ -25,12 +25,11 @@ export class ProgressController {
 
   updateProgress = asyncHandler(async (req: Request, res: Response) => {
     const assignmentId = parseAssignmentId(req.params.assignmentId);
-    const { lastQuery, incrementAttempt, markCompleted } = req.body ?? {};
+    const { lastQuery, incrementAttempt } = req.body ?? {};
 
     const progress = await ProgressService.updateProgress(req.user!.id, assignmentId, {
-      lastQuery,
+      lastQuery: typeof lastQuery === "string" ? lastQuery.slice(0, 20_000) : undefined,
       incrementAttempt: Boolean(incrementAttempt),
-      markCompleted: Boolean(markCompleted),
     });
 
     res

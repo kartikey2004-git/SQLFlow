@@ -12,13 +12,13 @@ export type AssignmentIdBody = z.infer<typeof AssignmentIdBodySchema>;
 
 export const ExecuteQuerySchema = z.object({
   assignmentId: positiveIntId,
-  query: z.string().min(1, "Invalid or missing query"),
+  query: z.string().min(1, "Invalid or missing query").max(100_000, "Query is too long"),
 });
 export type ExecuteQueryRequest = z.infer<typeof ExecuteQuerySchema>;
 
 export const GradeSubmissionSchema = z.object({
   assignmentId: positiveIntId,
-  query: z.string().min(1, "Query is required"),
+  query: z.string().min(1, "Query is required").max(100_000, "Query is too long"),
 });
 export type GradeSubmissionRequest = z.infer<typeof GradeSubmissionSchema>;
 
@@ -28,9 +28,6 @@ export const HintRequestSchema = z.object({
 });
 export type HintRequest = z.infer<typeof HintRequestSchema>;
 
-// Not wired into a rejecting middleware anywhere - progress updates are
-// intentionally permissive today (coerced with Boolean(), never 400s).
-// Kept here only so the shape is documented alongside the other schemas.
 export const ProgressUpdateSchema = z.object({
   lastQuery: z.string().nullish(),
   incrementAttempt: z.unknown().optional(),

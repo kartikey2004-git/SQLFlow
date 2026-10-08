@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { NormalizerService } from "../../src/services/grading/normalizer.service";
-import type { QueryResult } from "../../src/services/sandbox/execution.service";
+import type { TableResult as QueryResult } from "../../src/services/sandbox/tableResult";
 
 const queryResult = (rows: Record<string, unknown>[]): QueryResult => ({
   columns: rows[0] ? Object.keys(rows[0]) : [],
@@ -18,8 +18,6 @@ describe("NormalizerService.normalizeQueryResult", () => {
   });
 
   it("does not misgrade numeric-looking strings with leading zeros as numbers", () => {
-    // "007" is a plausible student-submitted zip/employee code - it must not
-    // silently become the number 7 (that was the pre-fix bug).
     const result = NormalizerService.normalizeQueryResult(queryResult([{ code: "007" }]));
     expect(result.rows[0]!.code).toBe("007");
   });

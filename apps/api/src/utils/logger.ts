@@ -10,8 +10,6 @@ export const logger = pino({
   },
 });
 
-// Per-request child logger with a correlation ID that round-trips via
-// X-Request-Id, so a request can be traced across app -> queue -> worker logs.
 export const requestLogger = pinoHttp({
   logger,
   genReqId: (req, res) => {
@@ -20,8 +18,6 @@ export const requestLogger = pinoHttp({
     res.setHeader("X-Request-Id", id);
     return id;
   },
-  // Don't log full query text/request bodies - they can carry student SQL or
-  // secrets in query params; keep logs to method/path/status/duration.
   serializers: {
     req: (req) => ({ method: req.method, url: req.url, id: req.id }),
     res: (res) => ({ statusCode: res.statusCode }),

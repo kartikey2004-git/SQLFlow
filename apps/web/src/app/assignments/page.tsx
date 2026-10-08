@@ -1,16 +1,6 @@
 import { fetchAssignments } from "@/services/assignment.service";
+import { AssignmentBrowser } from "@/components/assignments/assignment-browser";
 import type { AssignmentSummary } from "@sql-learn/types";
-import Link from "next/link";
-
-function DifficultyLabel({ difficulty }: { difficulty: AssignmentSummary["difficulty"] }) {
-  if (difficulty === "easy") {
-    return <span className="text-sm font-medium text-emerald-600">Easy</span>;
-  }
-  if (difficulty === "medium") {
-    return <span className="text-sm font-medium text-amber-500">Med.</span>;
-  }
-  return <span className="text-sm font-medium text-red-500">Hard</span>;
-}
 
 export default async function AssignmentsPage() {
   let assignments: AssignmentSummary[] = [];
@@ -22,58 +12,48 @@ export default async function AssignmentsPage() {
     error = err instanceof Error ? err.message : "Failed to load assignments";
   }
 
-  // Oldest first so numbering starts at 1 for the earliest problem
   const sorted = [...assignments].reverse();
+
+  const counts = { easy: 0, medium: 0, hard: 0 };
+  for (const assignment of assignments) {
+    counts[assignment.difficulty] += 1;
+  }
 
   return (
     <div className="min-h-screen bg-neutral-50">
-      <div className="mx-auto max-w-4xl px-4 py-10">
-        {/* Header */}
-        <div className="mb-6 flex items-baseline justify-between">
-          <h1 className="text-xl font-semibold text-neutral-900">SQL Practice</h1>
-          <span className="text-sm text-neutral-400">{assignments.length} problems</span>
-        </div>
-
-        {error ? (
-          <div className="rounded-md border border-neutral-200 bg-white px-6 py-10 text-center">
-            <p className="text-sm text-neutral-500">Unable to load assignments — {error}</p>
+      <div className="mx-auto max-w-7xl px-6 py-12">
+        <header className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-emerald-700">Practice</p>
+            <h1 className="mt-1 text-3xl font-semibold tracking-tight text-neutral-900">SQL Practice</h1>
+            <p className="mt-2 text-sm text-neutral-500">Problems run from the first to the latest.</p>
           </div>
-        ) : sorted.length === 0 ? (
-          <div className="rounded-md border border-neutral-200 bg-white px-6 py-16 text-center">
-            <p className="text-sm text-neutral-500">No assignments available yet</p>
-          </div>
-        ) : (
-          <div className="overflow-hidden rounded-md border border-neutral-200 bg-white">
-            {sorted.map((assignment, index) => (
-              <Link
-                key={assignment.id}
-                href={`/assignments/${assignment.id}`}
-                className={[
-                  "flex items-center gap-4 px-6 py-4 transition-colors hover:bg-blue-50",
-                  index !== sorted.length - 1 ? "border-b border-neutral-100" : "",
-                  index % 2 === 0 ? "bg-white" : "bg-neutral-50/60",
-                ].join(" ")}
-              >
-                {/* Row number */}
-                <span className="w-6 shrink-0 text-right text-sm text-neutral-400">
-                  {index + 1}.
-                </span>
+          <span className="font-mono text-sm text-neutral-400">{assignments.length} problems</span>
+        </header>
 
-                {/* Title */}
-                <span className="flex-1 text-sm font-medium text-neutral-900">
-                  {assignment.title}
+        {!error && sorted.length > 0 && (
+          <div className="mb-8 grid grid-cols-3 gap-px overflow-hidden border border-neutral-200 bg-neutral-200">
+            {(["easy", "medium", "hard"] as const).map((level) => (
+              <div key={level} className="flex flex-col gap-1 bg-white px-5 py-4">
+                <span className="text-xs uppercase tracking-wider text-neutral-500">
+                  {level === "easy" ? "Easy" : level === "medium" ? "Medium" : "Hard"}
                 </span>
-
-                {/* Acceptance placeholder */}
-                <span className="w-14 shrink-0 text-right text-sm text-neutral-400">—</span>
-
-                {/* Difficulty */}
-                <span className="w-10 shrink-0 text-right">
-                  <DifficultyLabel difficulty={assignment.difficulty} />
-                </span>
-              </Link>
+                <span className="text-2xl font-semibold tabular-nums text-neutral-900">{counts[level]}</span>
+              </div>
             ))}
           </div>
+        )}
+
+        {error ? (
+          <div className="border border-red-200 bg-red-50 px-6 py-10 text-center">
+            <p className="text-sm text-red-700">Unable to load assignments: {error}</p>
+          </div>
+        ) : sorted.length === 0 ? (
+          <div className="border border-neutral-200 bg-white px-6 py-16 text-center">
+            <p className="text-sm text-neutral-500">No assignments available yet.</p>
+          </div>
+        ) : (
+          <AssignmentBrowser assignments={sorted} />
         )}
       </div>
     </div>

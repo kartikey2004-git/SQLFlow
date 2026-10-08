@@ -2,7 +2,6 @@
 
 import { forwardRef, type AnchorHTMLAttributes, type MouseEvent } from "react";
 
-/** Scrolls to an in-page section without letting the browser touch the URL hash. */
 function scrollToHash(hash: string) {
   const id = hash.slice(1);
 
@@ -23,7 +22,6 @@ function scrollToHash(hash: string) {
 
 type HashLinkProps = AnchorHTMLAttributes<HTMLAnchorElement> & { href: string };
 
-/** In-page anchor that smooth-scrolls to its target section instead of navigating. */
 export const HashLink = forwardRef<HTMLAnchorElement, HashLinkProps>(function HashLink(
   { href, onClick, ...props },
   ref,

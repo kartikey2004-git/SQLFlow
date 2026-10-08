@@ -8,14 +8,12 @@ import {
   ReadinessScoreSection,
   UseCasesSection,
   DevelopersSection,
-  RoadmapSection,
-  FinalCtaSection,
   MarketingFooter,
 } from "./(marketing)/product-landing";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="mkt-landing min-h-screen bg-background text-foreground">
       <MarketingBackground />
       <MarketingNavigation />
       <main>
@@ -25,8 +23,6 @@ export default function Home() {
         <ReadinessScoreSection />
         <UseCasesSection />
         <DevelopersSection />
-        <RoadmapSection />
-        <FinalCtaSection />
       </main>
       <MarketingFooter />
     </div>

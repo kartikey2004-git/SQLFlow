@@ -3,6 +3,7 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
+      "env": ["API_ORIGIN", "NEXT_PUBLIC_API_URL", "NEXT_PUBLIC_AUTH_URL"],
       "outputs": [".next/**", "!.next/cache/**"]
     },
     "dev": {

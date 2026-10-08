@@ -1,11 +1,11 @@
 import { footer } from "../data";
-import { WAITLIST_FORM_URL } from "../data/conversion/waitlist";
+import { AuthGuardLink } from "@/components/auth/auth-guard-link";
 import { HashLink } from "./hash-link";
 import { Container, Icon } from "./primitives";
 
 export function MarketingFooter() {
   return (
-    <footer className="relative overflow-hidden border-t border-border pb-10 pt-20 md:pt-24">
+    <footer className="relative overflow-hidden pb-10 pt-20 md:pt-24">
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-x-0 bottom-0 hidden h-24 select-none overflow-hidden sm:block md:h-32 lg:h-40"
@@ -37,8 +37,7 @@ export function MarketingFooter() {
                 </p>
                 <ul className="flex flex-col gap-2.5">
                   {column.links.map((link) => {
-                    const isWaitlist = link.href === "#waitlist";
-                    const href = isWaitlist ? WAITLIST_FORM_URL : link.href;
+                    const href = link.href === "#waitlist" ? "/assignments" : link.href;
 
                     return (
                       <li key={link.label}>
@@ -50,14 +49,12 @@ export function MarketingFooter() {
                             {link.label}
                           </HashLink>
                         ) : (
-                          <a
+                          <AuthGuardLink
                             href={href}
-                            target={isWaitlist ? "_blank" : undefined}
-                            rel={isWaitlist ? "noopener noreferrer" : undefined}
                             className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                           >
                             {link.label}
-                          </a>
+                          </AuthGuardLink>
                         )}
                       </li>
                     );

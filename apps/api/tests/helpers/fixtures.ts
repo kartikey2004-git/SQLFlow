@@ -1,6 +1,6 @@
 import { pool } from "@sql-learn/database";
 import { auth } from "@sql-learn/auth";
-import { CleanupService } from "../../src/services/cleanup/cleanup.service";
+import { getSandboxAdminPool } from "../../src/services/sandbox/sandboxDb";
 
 let counter = 0;
 const unique = () => `${Date.now()}_${++counter}`;
@@ -19,11 +19,6 @@ export interface TestAssignmentOptions {
   hiddenTestCase?: boolean;
 }
 
-/**
- * Creates a minimal single-table assignment with one visible test case
- * (and optionally one hidden one), matching the shape SandboxService
- * expects in `sample_tables`.
- */
 export const createTestAssignment = async (options: TestAssignmentOptions = {}) => {
   const title = `Test Assignment ${unique()}`;
   const sampleTables = [
@@ -67,11 +62,13 @@ export const createTestAssignment = async (options: TestAssignmentOptions = {}) 
 };
 
 export const cleanupTestData = async () => {
-  // Child tables (attempts, submissions, ...) cascade from these deletes,
-  // but the Postgres sandbox *schemas* those attempts provisioned don't -
-  // sweep them via CleanupService so repeated test runs don't accumulate
-  // orphaned `sb_*` schemas.
   await pool.query(`DELETE FROM assignments WHERE title LIKE 'Test Assignment %'`);
   await pool.query(`DELETE FROM users WHERE email LIKE 'test_%@example.com'`);
-  await CleanupService.cleanupOrphanedSchemas();
+  const admin = getSandboxAdminPool();
+  const dbs = await admin.query<{ datname: string }>(
+    `SELECT datname FROM pg_database WHERE datname ~ '^(student_u|grade_s|sandbox_template_a)'`,
+  );
+  for (const { datname } of dbs.rows) await admin.query(`DROP DATABASE IF EXISTS "${datname}" WITH (FORCE)`);
+  const roles = await admin.query<{ rolname: string }>(`SELECT rolname FROM pg_roles WHERE rolname ~ '^(student_u|grade_s)'`);
+  for (const { rolname } of roles.rows) await admin.query(`DROP ROLE IF EXISTS "${rolname}"`);
 };

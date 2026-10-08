@@ -1,4 +1,7 @@
-/* Marketing-only decorative effects: grid texture + micro-motion for the landing page. */
+.mkt-landing {
+  --primary: #059669;
+  --ring: #059669;
+}
 
 .mkt-grid-bg {
   background-image:

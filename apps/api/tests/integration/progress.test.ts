@@ -35,15 +35,22 @@ describe("Progress", () => {
     expect(res.body.data.attemptCount).toBe(1);
   });
 
-  it("marks completed regardless of what the saved query text contains", async () => {
-    // Regression test for the old bug: markCompleted was gated on
-    // `!lastQuery.includes("completed")`, so a query mentioning that word
-    // anywhere would silently fail to mark progress complete.
+  it("ignores a client-sent markCompleted - completion is set only by grading", async () => {
     const res = await agent
       .put(`/progress/${assignmentId}`)
       .send({ lastQuery: "SELECT 'completed' AS status", markCompleted: true });
     expect(res.status).toBe(200);
-    expect(res.body.data.isCompleted).toBe(true);
+    expect(res.body.data.isCompleted).toBe(false);
+  });
+
+  it("marks completed via the grading helper", async () => {
+    const { ProgressService } = await import("../../src/services/progress/progress.service");
+    const me = await agent.get(`/progress/${assignmentId}`);
+    expect(me.status).toBe(200);
+    const { pool } = await import("@sql-learn/database");
+    const row = await pool.query("SELECT user_id FROM attempts WHERE assignment_id = $1 ORDER BY id DESC LIMIT 1", [assignmentId]);
+    const progress = await ProgressService.markCompletedFromGrading(row.rows[0].user_id, assignmentId);
+    expect(progress.isCompleted).toBe(true);
   });
 
   it("rejects access without authentication", async () => {
@@ -58,6 +65,6 @@ describe("Progress", () => {
 
     const res = await otherAgent.get(`/progress/${assignmentId}`);
     expect(res.status).toBe(200);
-    expect(res.body.data.attemptCount).toBe(0); // not the first user's incremented count
+    expect(res.body.data.attemptCount).toBe(0);
   });
 });

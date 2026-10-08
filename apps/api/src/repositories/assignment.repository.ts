@@ -14,13 +14,11 @@ export interface AssignmentSummaryRow {
   created_at: Date;
 }
 
-/** Public/student-safe shape - never includes solution_sql. */
 export interface AssignmentPublicRow extends AssignmentSummaryRow {
   question: string;
   sample_tables: SampleTableRow[];
 }
 
-/** Internal shape used by grading/hint services only. */
 export interface AssignmentInternalRow extends AssignmentPublicRow {
   solution_sql: string | null;
 }
@@ -38,7 +36,6 @@ export const AssignmentRepository = {
     return result.rows;
   },
 
-  /** Student-facing read - deliberately excludes solution_sql. */
   async findPublicById(id: number): Promise<AssignmentPublicRow | null> {
     const result = await pool.query<AssignmentPublicRow>(
       `SELECT ${PUBLIC_COLUMNS}
@@ -49,7 +46,6 @@ export const AssignmentRepository = {
     return result.rows[0] ?? null;
   },
 
-  /** Internal read (grading/hints only) - includes solution_sql. */
   async findInternalById(id: number): Promise<AssignmentInternalRow | null> {
     const result = await pool.query<AssignmentInternalRow>(
       `SELECT ${PUBLIC_COLUMNS}, solution_sql

@@ -7,14 +7,6 @@ import { SandboxService } from "../../src/services/sandbox/sandbox.service";
 import { SubmissionRepository } from "../../src/repositories/submission.repository";
 import { CleanupService } from "../../src/services/cleanup/cleanup.service";
 
-/**
- * Regression suite for prompt.md §13 ("a job may be retried ... must not
- * produce duplicate submission/grade/result") and §16 (stale-job
- * reconciliation). pg-boss redelivers a retried job under the *same*
- * `job.id`, so these tests simulate that by calling GradingService.
- * gradeSubmission twice with the same jobId, the way worker.ts does across
- * two deliveries of one job.
- */
 describe("Queue idempotency and stale-submission reconciliation", () => {
   let userId: number;
   let assignmentId: number;
@@ -56,8 +48,6 @@ describe("Queue idempotency and stale-submission reconciliation", () => {
     const results = await pool.query(`SELECT id FROM evaluation_results WHERE submission_id = $1`, [
       first.submissionId,
     ]);
-    // One row per test case for this assignment (a single visible test case
-    // from createTestAssignment) - not doubled by the second delivery.
     expect(results.rows.length).toBeGreaterThan(0);
     expect(results.rows.length).toBe(new Set(results.rows.map((r) => r.id)).size);
   });
@@ -80,8 +70,6 @@ describe("Queue idempotency and stale-submission reconciliation", () => {
       ])).rows[0].id,
       sqlText: "SELECT 1",
     });
-    // Backdate submitted_at to simulate a submission that has been stuck
-    // "evaluating" long enough to be past the reconciliation threshold.
     await pool.query(`UPDATE submissions SET submitted_at = now() - interval '10 minutes' WHERE id = $1`, [
       submission.id,
     ]);

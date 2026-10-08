@@ -19,10 +19,6 @@ export interface HintGenerationOutput {
   outputTokens: number;
 }
 
-// GA Gemini models can't combine Google Search grounding with structured
-// output in a single call (only preview Gemini 3 tiers can) - so this runs
-// as two calls: a grounded research pass, then a plain structured-output
-// pass that distills the research into the final hint.
 const MODEL_ID = "gemini-3.7-flash";
 
 const HintSchema = z.object({
@@ -36,8 +32,6 @@ const HintSchema = z.object({
     ),
 });
 
-// Constraints are stable across every hint request for a given level - kept
-// as a fixed block (not interpolated) so the phase-2 call stays cacheable.
 const SYSTEM_PROMPT = `<role>
 You are a Socratic SQL tutor helping a student practicing SQL queries against a small practice database. Your job is to nudge them toward the fix, never to hand them the answer.
 </role>
@@ -85,9 +79,6 @@ export const HintProvider = {
 
     const promptContext = buildPromptContext(input);
 
-    // Phase 1: grounded research - let the model search the web for SQL
-    // concept/documentation context if it thinks that would help, before
-    // the hint itself gets written.
     const research = await generateText({
       model: google(MODEL_ID),
       tools: { google_search: google.tools.googleSearch({}) },
@@ -97,8 +88,6 @@ export const HintProvider = {
       prompt: promptContext,
     });
 
-    // Phase 2: distill the research into the final structured hint, under
-    // the same constraints the student-facing hint must always satisfy.
     const { object, usage } = await generateObject({
       model: google(MODEL_ID),
       schema: HintSchema,

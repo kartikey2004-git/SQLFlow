@@ -1,210 +1,226 @@
 import { product } from "../data";
-import { ArchitectureGraph } from "./graph";
-import {
-  Chip,
-  Container,
-  Icon,
-  Panel,
-  ScoreBar,
-  Section,
-  SectionHeading,
-  StatTile,
-} from "./primitives";
+import { Chip, Container, Icon, Section, SectionHeading } from "./primitives";
 
 type ProductFeature = (typeof product.features)[number];
 
-function FeatureStatusChip({ status }: { status: ProductFeature["status"] }) {
-  return status === "shipped" ? (
-    <Chip tone="success" className="bg-transparent border-none">
-      Shipped
-    </Chip>
-  ) : (
-    <Chip tone="neutral" className="bg-transparent border-none">
-      Planned
-    </Chip>
+const toneBar = (score: number) =>
+  score >= 75 ? "bg-primary" : score >= 50 ? "bg-amber-400" : "bg-destructive";
+
+const labelClass = "text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground";
+
+function ChallengeVisual({ input, output }: {
+  input: { label: string; content: string };
+  output: { label: string; items: string[] };
+}) {
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="border border-border bg-background/60 p-5">
+        <p className={`mb-3 ${labelClass}`}>{input.label}</p>
+        <p className="whitespace-pre-line font-mono text-[13px] leading-7 text-foreground/80">
+          {input.content}
+        </p>
+      </div>
+      <div className="border border-primary/20 p-5">
+        <p className={`mb-3 ${labelClass}`}>{output.label}</p>
+        <div className="flex flex-wrap gap-2">
+          {output.items.map((item) => (
+            <span
+              key={item}
+              className="border border-primary/25 px-2.5 py-1 font-mono text-xs text-primary"
+            >
+              {item}
+            </span>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ScoreVisual({ categories, findings }: {
+  categories: { name: string; score: number }[];
+  findings: { severity: string; title: string }[];
+}) {
+  const overall = Math.round(
+    categories.reduce((sum, c) => sum + c.score, 0) / categories.length,
+  );
+
+  return (
+    <div className="flex flex-col gap-8">
+      <div className="grid gap-6 lg:grid-cols-[200px_1fr] lg:items-center">
+        <div className="flex flex-col gap-1 border border-primary/20 bg-background/60 p-6">
+          <span className={labelClass}>Overall</span>
+          <span className="font-mono text-6xl font-light tabular-nums text-foreground">
+            {overall}
+          </span>
+          <span className="text-xs text-muted-foreground">out of 100</span>
+        </div>
+
+        <ul className="flex flex-col gap-4">
+          {categories.map((c) => (
+            <li
+              key={c.name}
+              className="grid grid-cols-[minmax(0,140px)_1fr_36px] items-center gap-4"
+            >
+              <span className="text-sm leading-5 text-muted-foreground">{c.name}</span>
+              <div className="h-1.5 overflow-hidden bg-foreground/[0.06]">
+                <div
+                  className={`h-full ${toneBar(c.score)}`}
+                  style={{ width: `${c.score}%` }}
+                />
+              </div>
+              <span className="text-right font-mono text-sm tabular-nums text-foreground">
+                {c.score}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="flex flex-col gap-3 border-t border-border pt-6">
+        <p className={labelClass}>Findings</p>
+        <ul className="flex flex-col gap-2">
+          {findings.map((f) => (
+            <li
+              key={f.title}
+              className="flex items-start gap-3 border border-border/70 bg-background/50 p-3.5"
+            >
+              <Chip tone={f.severity === "critical" ? "danger" : "warning"} className="shrink-0 bg-transparent border-none">
+                {f.severity}
+              </Chip>
+              <span className="text-sm leading-6 text-muted-foreground">{f.title}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+function FixesVisual({ fixes }: { fixes: { title: string; technology: string }[] }) {
+  return (
+    <ul className="grid flex-1 auto-rows-fr gap-2">
+      {fixes.map((fix) => (
+        <li
+          key={fix.title}
+          className="flex items-center justify-between gap-3 border border-border/70 bg-background/50 px-4 py-3 transition-colors"
+        >
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="text-sm leading-5 text-foreground">{fix.title}</span>
+          </div>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function PathVisual({ before, request, migration }: {
+  before: string[];
+  request: string;
+  migration: { phase: string; steps: string[] }[];
+}) {
+  return (
+    <div className="flex flex-1 flex-col gap-6">
+      <div className="flex flex-wrap items-center gap-2 border border-dashed border-border p-4">
+        {before.map((tech) => (
+          <Chip key={tech}>{tech}</Chip>
+        ))}
+        <Icon name="arrow-right" className="size-4 shrink-0 text-muted-foreground" />
+        <span className="font-mono text-[12.5px] text-muted-foreground">{request}</span>
+      </div>
+
+      <ol className="grid flex-1 auto-rows-fr gap-4 md:grid-cols-3">
+        {migration.map((phase, i) => (
+          <li
+            key={phase.phase}
+            className="flex flex-col gap-4 border border-border/70 bg-background/50 p-5"
+          >
+            <div className="flex items-center justify-between">
+              <span className="font-mono text-xs text-muted-foreground">0{i + 1}</span>
+              <span className="text-sm font-medium text-foreground">{phase.phase}</span>
+            </div>
+            <div className="flex gap-1.5" aria-hidden="true">
+              {[0, 1, 2].map((level) => (
+                <span
+                  key={level}
+                  className={`h-1 flex-1 ${level <= i ? "bg-primary" : "bg-foreground/10"}`}
+                />
+              ))}
+            </div>
+            <ul className="flex flex-col gap-2">
+              {phase.steps.map((step) => (
+                <li key={step} className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <span className="size-1.5 shrink-0 bg-primary/60" />
+                  {step}
+                </li>
+              ))}
+            </ul>
+          </li>
+        ))}
+      </ol>
+    </div>
   );
 }
 
 function FeatureVisual({ feature }: { feature: ProductFeature }) {
-  if ("input" in feature && "output" in feature) {
-    const f = feature as typeof feature & {
-      input: { label: string; content: string };
-      output: { label: string; items: string[] };
-    };
+  if (feature.input && feature.output) {
+    return <ChallengeVisual input={feature.input} output={feature.output} />;
+  }
+  if (feature.score && feature.findings) {
+    return <ScoreVisual categories={feature.score.categories} findings={feature.findings} />;
+  }
+  if (feature.fixes) {
+    return <FixesVisual fixes={feature.fixes} />;
+  }
+  if (feature.before && feature.request && feature.migration) {
     return (
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-stretch">
-        <Panel className="flex-1 border-dashed bg-transparent p-4 backdrop-blur-none">
-          <p className="mb-2 text-xs uppercase tracking-wide text-muted-foreground">
-            {f.input.label}
-          </p>
-          <p className="font-mono text-[12.5px] leading-relaxed text-muted-foreground">
-            {f.input.content}
-          </p>
-        </Panel>
-        <div className="flex items-center justify-center py-1 sm:py-0">
-          <Icon
-            name="arrow-right"
-            className="size-5 shrink-0 rotate-90 text-muted-foreground sm:rotate-0"
-          />
-        </div>
-        <Panel className="flex-1 border-dashed bg-transparent p-4 backdrop-blur-none">
-          <p className="mb-2 text-xs uppercase tracking-wide text-muted-foreground">
-            {f.output.label}
-          </p>
-          <div className="flex flex-wrap gap-1.5">
-            {f.output.items.map((item) => (
-              <Chip key={item} className="rounded-none border-none">{item}</Chip>
-            ))}
-          </div>
-        </Panel>
-      </div>
+      <PathVisual
+        before={feature.before}
+        request={feature.request}
+        migration={feature.migration}
+      />
     );
   }
-
-  if ("score" in feature) {
-    const f = feature as typeof feature & {
-      score: { categories: { name: string; score: number }[] };
-      findings: { severity: string; title: string }[];
-    };
-    return (
-      <div className="flex flex-col gap-6">
-        <div className="grid gap-6 sm:grid-cols-[auto_1fr] sm:items-center">
-          <div className="grid gap-x-6 gap-y-3 sm:grid-cols-2">
-            {f.score.categories.map((category) => (
-              <ScoreBar
-                key={category.name}
-                label={category.name}
-                score={category.score}
-              />
-            ))}
-          </div>
-        </div>
-        <div className="flex flex-col gap-3 border-t border-border pt-5">
-          <p className="text-xs uppercase tracking-wide text-muted-foreground">
-            Findings
-          </p>
-
-          <ul className="flex flex-col gap-2.5 -ml-5">
-            {f.findings.map((finding) => (
-              <li
-                key={finding.title}
-                className="grid grid-cols-[90px_minmax(0,1fr)] items-center gap-3 text-sm"
-              >
-                <Chip
-                  tone={finding.severity === "critical" ? "danger" : "warning"}
-                  className="w-[90px] justify-center border-none bg-transparent px-0"
-                >
-                  {finding.severity}
-                </Chip>
-
-                <span className="min-w-0 leading-5 text-muted-foreground">
-                  {finding.title}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
-    );
-  }
-
-  if ("fixes" in feature) {
-    const f = feature as typeof feature & {
-      fixes: { title: string; technology: string }[];
-    };
-    return (
-      <ul className="grid gap-2 sm:grid-cols-2">
-        {f.fixes.map((fix) => (
-          <li
-            key={fix.title}
-            className="flex items-center justify-between gap-3 rounded-lg border border-dashed border-border bg-transparent px-3 py-2.5"
-          >
-            <div className="flex min-w-0 items-center gap-2.5">
-              <Icon
-                name="check-circle"
-                className="size-4 shrink-0 text-emerald-400"
-              />
-              <div className="flex min-w-0 flex-col">
-                <span className="truncate text-sm text-foreground">
-                  {fix.title}
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  {fix.technology}
-                </span>
-              </div>
-            </div>
-          </li>
-        ))}
-      </ul>
-    );
-  }
-
-  if ("before" in feature) {
-    return (
-      <div className="flex flex-col gap-5">
-        <div className="flex flex-wrap items-center gap-2">
-          {feature.before.map((tech) => (
-            <Chip key={tech}>{tech}</Chip>
-          ))}
-          <Icon
-            name="arrow-right"
-            className="size-4 shrink-0 text-muted-foreground"
-          />
-          <span className="font-mono text-[12.5px] text-muted-foreground">
-            {feature.request}
-          </span>
-        </div>
-        <ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {feature.migration.map((phase) => (
-            <li
-              key={phase.phase}
-              className="rounded-xl border border-dashed border-border bg-transparent p-4"
-            >
-              <p className="mb-1.5 text-xs font-medium text-primary">
-                {phase.phase}
-              </p>
-              <p className="text-xs leading-relaxed text-muted-foreground">
-                {phase.steps.join(" · ")}
-              </p>
-            </li>
-          ))}
-        </ol>
-      </div>
-    );
-  }
-
   return null;
 }
 
-function WorkflowPanel({ feature }: { feature: ProductFeature }) {
+function BentoCard({ feature, className = "" }: { feature: ProductFeature; className?: string }) {
   return (
-    <Panel className="flex h-[560px] w-[560px] flex-col gap-6 overflow-y-auto p-6 backdrop-blur-none md:w-[720px] md:p-9">
-      <div className="flex flex-col gap-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <Icon name={feature.icon} className="size-4 text-primary" />
-          <span className="font-mono text-xs text-muted-foreground">
-            {feature.number}
-          </span>
-          <FeatureStatusChip status={feature.status} />
+    <article
+      className={`group relative flex flex-col overflow-hidden bg-background p-6 transition-colors duration-500 md:p-8 ${className}`}
+    >
+      <div className="relative flex flex-col gap-5">
+        <div className="flex items-start justify-between gap-4">
+          <span className="font-mono text-xs text-muted-foreground">{feature.number}</span>
         </div>
-        <h3 className="text-lg font-medium text-foreground md:text-xl">
-          {feature.title}
-        </h3>
-        <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
-          {feature.description}
-        </p>
+
+        <div className="flex flex-col gap-3">
+          <h3 className="text-xl font-medium tracking-tight text-foreground md:text-2xl">
+            {feature.title}
+          </h3>
+          <p className="max-w-prose text-sm leading-relaxed text-muted-foreground">
+            {feature.description}
+          </p>
+        </div>
       </div>
 
-      <FeatureVisual feature={feature} />
-    </Panel>
+      <div className="relative mt-8 flex flex-1 flex-col">
+        <FeatureVisual feature={feature} />
+      </div>
+    </article>
   );
 }
 
-export function ProductDemoSection() {
-  const features = [...product.features, ...product.features];
+const bentoPlacement: Record<string, string> = {
+  write: "lg:col-start-1 lg:row-start-1",
+  score: "order-first md:col-span-2 lg:order-none lg:col-span-2 lg:col-start-2 lg:row-start-1",
+  fixes: "lg:col-start-4 lg:row-start-1",
+  path: "md:col-span-2 lg:col-span-4 lg:col-start-1 lg:row-start-2",
+};
 
+export function ProductDemoSection() {
   return (
-    <Section id={product.id} className="border-t border-border">
+    <Section id={product.id}>
       <span id="how-it-works" className="sr-only" aria-hidden="true" />
 
       <Container>
@@ -213,18 +229,17 @@ export function ProductDemoSection() {
           title={product.title}
           description={product.description}
         />
-      </Container>
 
-      <div className="mt-14 overflow-hidden lg:mt-20">
-        <div className="flex w-max animate-infinite-scroll gap-6 px-4 md:px-10 lg:px-14">
-          {features.map((feature, index) => (
-            <WorkflowPanel
-              key={`${feature.id}-${index}`}
+        <div className="mt-14 grid gap-px border border-border bg-border md:grid-cols-2 lg:mt-20 lg:grid-cols-4">
+          {product.features.map((feature) => (
+            <BentoCard
+              key={feature.id}
               feature={feature}
+              className={bentoPlacement[feature.id] ?? ""}
             />
           ))}
         </div>
-      </div>
+      </Container>
     </Section>
   );
 }

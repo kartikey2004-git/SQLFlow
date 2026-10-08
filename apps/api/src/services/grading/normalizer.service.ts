@@ -1,4 +1,4 @@
-import type { QueryResult } from "../sandbox/execution.service";
+import type { TableResult as QueryResult } from "../sandbox/tableResult";
 
 export interface ExpectedOutput {
   type: string;
@@ -18,27 +18,16 @@ export interface NormalizedResult {
 export class NormalizerService {
   private static readonly FLOAT_PRECISION = 6;
 
-  /**
-   * Normalize a single value
-   */
   private static normalizeValue(value: any): any {
-    // Handle null/undefined consistently
     if (value === null || value === undefined) {
       return null;
     }
 
-    // Convert numeric strings to numbers
     if (typeof value === "string") {
-      // Trim whitespace
       const trimmed = value.trim();
 
-      // Only coerce when the string is *exactly* how JS would print that
-      // number back out - rejects things like "007" or "1_000", which are
-      // legitimate non-numeric-typed values (codes, IDs) that would
-      // otherwise silently misgrade as their numeric value.
       const num = Number(trimmed);
       if (trimmed !== "" && !isNaN(num) && String(num) === trimmed) {
-        // Round floating numbers to fixed precision
         if (Number.isFinite(num) && !Number.isInteger(num)) {
           return (
             Math.round(num * Math.pow(10, this.FLOAT_PRECISION)) /
@@ -51,7 +40,6 @@ export class NormalizerService {
       return trimmed;
     }
 
-    // Handle numbers - round floating point
     if (
       typeof value === "number" &&
       Number.isFinite(value) &&
@@ -66,9 +54,6 @@ export class NormalizerService {
     return value;
   }
 
-  /**
-   * Normalize a single row
-   */
   private static normalizeRow(row: any): NormalizedRow {
     if (typeof row !== "object" || row === null) {
       return row;
@@ -76,13 +61,11 @@ export class NormalizerService {
 
     const normalized: NormalizedRow = {};
 
-    // Convert all keys to lowercase and sort them alphabetically
     const sortedKeys = Object.keys(row)
       .map((key) => key.toLowerCase())
       .sort();
 
     for (const key of sortedKeys) {
-      // Find the original key that matches this lowercase key
       const originalKey = Object.keys(row).find((k) => k.toLowerCase() === key);
       if (originalKey) {
         normalized[key] = this.normalizeValue(row[originalKey]);
@@ -92,20 +75,15 @@ export class NormalizerService {
     return normalized;
   }
 
-  /**
-   * Normalize query result for comparison
-   */
   static normalizeQueryResult(result: QueryResult): NormalizedResult {
     const normalizedRows = result.rows.map((row) => this.normalizeRow(row));
 
-    // Sort rows deterministically using JSON string comparison
     normalizedRows.sort((a, b) => {
       const aStr = JSON.stringify(a, Object.keys(a).sort());
       const bStr = JSON.stringify(b, Object.keys(b).sort());
       return aStr.localeCompare(bStr);
     });
 
-    // Get all unique columns from normalized rows
     const columns = Array.from(
       new Set(normalizedRows.flatMap((row) => Object.keys(row))),
     ).sort();
@@ -117,9 +95,6 @@ export class NormalizerService {
     };
   }
 
-  /**
-   * Normalize expected output based on type
-   */
   static normalizeExpectedOutput(
     expectedOutput: ExpectedOutput,
   ): NormalizedResult {
@@ -127,13 +102,11 @@ export class NormalizerService {
 
     switch (type) {
       case "table": {
-        // Value is an array of objects
         const tableRows = Array.isArray(value) ? value : [];
         const normalizedTableRows = tableRows.map((row) =>
           this.normalizeRow(row),
         );
 
-        // Sort rows deterministically
         normalizedTableRows.sort((a, b) => {
           const aStr = JSON.stringify(a, Object.keys(a).sort());
           const bStr = JSON.stringify(b, Object.keys(b).sort());
@@ -152,7 +125,6 @@ export class NormalizerService {
       }
 
       case "single_value": {
-        // Value is a single value
         const normalizedValue = this.normalizeValue(value);
         const singleRow: NormalizedRow = { value: normalizedValue };
 
@@ -164,7 +136,6 @@ export class NormalizerService {
       }
 
       case "column": {
-        // Value is an array of values
         const columnValues = Array.isArray(value) ? value : [];
         const normalizedColumnValues = columnValues.map((val) =>
           this.normalizeValue(val),
@@ -173,7 +144,6 @@ export class NormalizerService {
           (val) => ({ value: val }),
         );
 
-        // Sort values for order-insensitive comparison
         columnRows.sort((a, b) => {
           const aVal = a.value;
           const bVal = b.value;
@@ -197,7 +167,6 @@ export class NormalizerService {
       }
 
       case "row": {
-        // Value is a single object
         const rowValue =
           typeof value === "object" && value !== null ? value : {};
         const normalizedRow = this.normalizeRow(rowValue);
@@ -210,7 +179,6 @@ export class NormalizerService {
       }
 
       case "count": {
-        // Value is just a number
         const countValue = this.normalizeValue(value);
         const countRow: NormalizedRow = { count: countValue };
 

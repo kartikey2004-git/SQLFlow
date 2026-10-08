@@ -1,13 +1,6 @@
-/**
- * Core relational schema. Consolidates what used to live in MongoDB
- * (assignments, progress, execution/hint logs) into Postgres alongside
- * the sandbox schemas this database already hosts.
- */
-
 exports.shorthands = undefined;
 
 exports.up = (pgm) => {
-  // --- users -------------------------------------------------------------
   pgm.createTable("users", {
     id: { type: "bigserial", primaryKey: true },
     email: { type: "text", notNull: true },
@@ -28,7 +21,6 @@ exports.up = (pgm) => {
     WHERE deleted_at IS NULL;
   `);
 
-  // --- sessions ------------------------------------------------------------
   pgm.createTable("sessions", {
     id: { type: "uuid", primaryKey: true, default: pgm.func("gen_random_uuid()") },
     user_id: {
@@ -47,7 +39,6 @@ exports.up = (pgm) => {
   pgm.createIndex("sessions", "user_id");
   pgm.createIndex("sessions", "expires_at", { where: "revoked_at IS NULL" });
 
-  // --- assignments -----------------------------------------------------
   pgm.createTable("assignments", {
     id: { type: "bigserial", primaryKey: true },
     public_id: { type: "uuid", notNull: true, unique: true, default: pgm.func("gen_random_uuid()") },
@@ -61,10 +52,7 @@ exports.up = (pgm) => {
       default: "medium",
       check: "difficulty IN ('easy', 'medium', 'hard')",
     },
-    // Table/column defs + seed rows used to provision each sandbox schema.
     sample_tables: { type: "jsonb", notNull: true, default: "[]" },
-    // Reference solution kept server-side only, for hint leak-detection.
-    // Never selected on any student-facing read path.
     solution_sql: { type: "text" },
     is_published: { type: "boolean", notNull: true, default: true },
     created_by: { type: "bigint", references: "users", onDelete: "SET NULL" },
@@ -84,8 +72,7 @@ exports.up = (pgm) => {
     ) STORED;
   `);
   pgm.createIndex("assignments", "search_vector", { method: "gin" });
-
-  // --- test_cases ----------------------------------------------------------
+  
   pgm.createTable("test_cases", {
     id: { type: "bigserial", primaryKey: true },
     assignment_id: {
@@ -109,7 +96,6 @@ exports.up = (pgm) => {
   });
   pgm.createIndex("test_cases", ["assignment_id", "order_index"]);
 
-  // --- attempts (one rolling row per user+assignment; replaces UserProgress) --
   pgm.createTable("attempts", {
     id: { type: "bigserial", primaryKey: true },
     user_id: { type: "bigint", notNull: true, references: "users", onDelete: "CASCADE" },
@@ -128,8 +114,6 @@ exports.up = (pgm) => {
     last_query: { type: "text", notNull: true, default: "" },
     attempt_count: { type: "integer", notNull: true, default: 0 },
     completed_at: { type: "timestamptz" },
-    // Sandbox schema this attempt provisions into (schema-per user+assignment).
-    // Nullable until the sandbox is first initialized.
     schema_name: { type: "text", unique: true },
     schema_provisioned_at: { type: "timestamptz" },
     last_attempt_at: { type: "timestamptz", notNull: true, default: pgm.func("now()") },
@@ -140,7 +124,6 @@ exports.up = (pgm) => {
     unique: ["user_id", "assignment_id"],
   });
 
-  // --- query_executions (append-only log; composite PK is partition-ready) --
   pgm.createTable(
     "query_executions",
     {
@@ -166,7 +149,6 @@ exports.up = (pgm) => {
   );
   pgm.createIndex("query_executions", ["attempt_id", "created_at"]);
 
-  // --- submissions (a graded "Run & Submit") --------------------------------
   pgm.createTable("submissions", {
     id: { type: "bigserial", primaryKey: true },
     attempt_id: {
@@ -194,7 +176,6 @@ exports.up = (pgm) => {
   });
   pgm.createIndex("submissions", "attempt_id");
 
-  // --- evaluation_results ----------------------------------------------------
   pgm.createTable("evaluation_results", {
     id: { type: "bigserial", primaryKey: true },
     submission_id: {
@@ -217,7 +198,6 @@ exports.up = (pgm) => {
     unique: ["submission_id", "test_case_id"],
   });
 
-  // --- hint_requests (AI hint interaction log; replaces HintLog) -------------
   pgm.createTable("hint_requests", {
     id: { type: "bigserial", primaryKey: true },
     user_id: { type: "bigint", notNull: true, references: "users", onDelete: "CASCADE" },
@@ -240,7 +220,6 @@ exports.up = (pgm) => {
   });
   pgm.createIndex("hint_requests", ["user_id", "assignment_id", "created_at"]);
 
-  // --- updated_at trigger (Postgres' own `emp_stamp` pattern) -----------------
   pgm.createFunction(
     "set_updated_at",
     [],

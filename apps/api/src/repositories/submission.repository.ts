@@ -1,6 +1,6 @@
 import { pool } from "@sql-learn/database";
 
-export type SubmissionStatus = "pending" | "evaluating" | "completed" | "failed";
+export type SubmissionStatus = "pending" | "evaluating" | "completed" | "failed" | "cancelled";
 
 export interface SubmissionRow {
   id: number;
@@ -8,7 +8,7 @@ export interface SubmissionRow {
   sql_text: string;
   status: SubmissionStatus;
   passed: boolean | null;
-  score: string | null; // numeric comes back as string from pg
+  score: string | null;
   execution_time_ms: number | null;
   row_count: number | null;
   error_message: string | null;
@@ -17,15 +17,6 @@ export interface SubmissionRow {
 }
 
 export const SubmissionRepository = {
-  /**
-   * Creates a submission row, or - when called with a `jobId` from a
-   * pg-boss job - returns the row already created by an earlier delivery of
-   * that same job instead of inserting a duplicate. Retried jobs keep the
-   * same `job.id`, so `ON CONFLICT (job_id) DO NOTHING` + re-fetch is enough
-   * to make submission creation idempotent (see migrations/1700000000006).
-   * Direct callers (tests calling GradingService without going through the
-   * queue) omit jobId and get the previous plain-INSERT behavior.
-   */
   async create(data: { attemptId: number; sqlText: string; jobId?: string }): Promise<SubmissionRow> {
     if (data.jobId) {
       const inserted = await pool.query<SubmissionRow>(
@@ -39,10 +30,6 @@ export const SubmissionRepository = {
 
       const existing = await this.findByJobId(data.jobId);
       if (!existing) {
-        // Conflict fired but a concurrent transaction hasn't committed its
-        // row yet - vanishingly unlikely (jobs for a given user are
-        // singleton-keyed), but fail loudly rather than silently creating a
-        // duplicate.
         throw new Error(`submissions.job_id conflict for ${data.jobId} but no row found`);
       }
       return existing;
@@ -101,13 +88,6 @@ export const SubmissionRepository = {
     return result.rows[0] ?? null;
   },
 
-  /**
-   * Submissions still "evaluating" past `cutoff` - the worker that owned
-   * them crashed (or was killed) between marking them evaluating and
-   * persisting a result. Reconciliation target for CleanupService (see
-   * prompt.md §16 - "never leave submissions permanently stuck in
-   * running").
-   */
   async findStaleEvaluating(cutoff: Date): Promise<SubmissionRow[]> {
     const result = await pool.query<SubmissionRow>(
       `SELECT * FROM submissions WHERE status = 'evaluating' AND submitted_at < $1`,

@@ -19,21 +19,22 @@ if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
   };
 }
 
-/**
- * Single source of truth for authentication (replaces the former custom
- * session/password system). `generateId: "serial"` keeps every model's `id`
- * on Postgres's own bigserial sequence - the same scheme `users.id` already
- * used - so existing bigint FKs (assignments.created_by, attempts.user_id,
- * hint_requests.user_id) needed no changes.
- */
 export const auth = betterAuth({
   appName: "SQL Learn",
   baseURL: process.env.BETTER_AUTH_URL,
   basePath: "/auth",
   secret: process.env.BETTER_AUTH_SECRET,
-  trustedOrigins: process.env.CORS_ORIGIN ? [process.env.CORS_ORIGIN] : [],
+  trustedOrigins: (process.env.CORS_ORIGIN ?? "")
+    .split(",")
+    .map((o) => o.trim())
+    .filter(Boolean),
   database: prismaAdapter(prisma, { provider: "postgresql" }),
   advanced: {
+    useSecureCookies: process.env.NODE_ENV === "production",
+    ...(process.env.COOKIE_DOMAIN
+      ? { crossSubDomainCookies: { enabled: true, domain: process.env.COOKIE_DOMAIN } }
+      : {}),
+    defaultCookieAttributes: { sameSite: "lax", httpOnly: true },
     database: {
       generateId: "serial",
     },
@@ -41,8 +42,6 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     autoSignIn: true,
-    // Reuses the existing OWASP-tuned Argon2id (hash-wasm) implementation so
-    // every pre-migration password hash keeps verifying with no forced reset.
     password: {
       hash: (password) => PasswordService.hash(password),
       verify: ({ hash, password }) => PasswordService.verify(hash, password),
@@ -51,8 +50,6 @@ export const auth = betterAuth({
   socialProviders,
   user: {
     modelName: "users",
-    // Reuses the existing `display_name`/`created_at`/`updated_at` columns
-    // instead of adding camelCase duplicates.
     fields: {
       name: "display_name",
       emailVerified: "email_verified",
@@ -60,13 +57,8 @@ export const auth = betterAuth({
       updatedAt: "updated_at",
     },
     additionalFields: {
-      // Domain role (student/instructor/admin) - authorization stays app-owned;
-      // `input: false` keeps it out of client-controlled sign-up payloads.
       role: { type: "string", input: false, defaultValue: "student" },
     },
-    // Immediate deletion (no email confirmation step - out of scope, see
-    // prompt.md section 10) once the password/session-freshness check in
-    // Better Auth's own /delete-user endpoint passes.
     deleteUser: { enabled: true },
   },
   session: {
@@ -104,12 +96,8 @@ export const auth = betterAuth({
     },
   },
   rateLimit: {
-    // Always on (Better Auth otherwise only enables this in production) -
-    // the old loginRateLimiter applied in every environment.
     enabled: true,
     customRules: {
-      // Overrides Better Auth's built-in 3-per-10s default for these paths
-      // with something closer to the old combined IP+email policy (8/20min).
       "/sign-in/email": { window: 60 * 20, max: 8 },
       "/sign-up/email": { window: 60 * 20, max: 8 },
     },

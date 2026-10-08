@@ -131,7 +131,7 @@ export function ArchitectureGraph({
           >
             <div
               className={cn(
-                "flex flex-col items-center gap-0.5 whitespace-nowrap border px-2.5 py-1.5 text-[11px] font-medium backdrop-blur-md",
+                "flex flex-col items-center gap-0.5 whitespace-nowrap border px-2.5 py-1.5 text-[11px] font-medium",
                 emphasized
                   ? "border-primary/45 bg-primary/15 text-foreground shadow-[0_0_24px_-6px_var(--primary)]"
                   : "border-border bg-white/[0.03] text-muted-foreground",

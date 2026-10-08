@@ -1,6 +1,6 @@
 import type { AssignmentSummary, AssignmentDetail } from "@sql-learn/types";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+import { getApiBase } from "@/lib/config";
 
 interface ApiEnvelope<T> {
   success: boolean;
@@ -8,9 +8,17 @@ interface ApiEnvelope<T> {
   data: T;
 }
 
+const parseEnvelope = async <T,>(response: Response): Promise<ApiEnvelope<T>> => {
+  const type = response.headers.get("content-type") ?? "";
+  if (!type.includes("application/json")) {
+    throw new Error(`API returned ${response.status} ${type || "non-JSON"} (expected JSON)`);
+  }
+  return response.json();
+};
+
 export const fetchAssignments = async (): Promise<AssignmentSummary[]> => {
-  const response = await fetch(`${API_URL}/assignments`, { credentials: "include" });
-  const result: ApiEnvelope<AssignmentSummary[]> = await response.json();
+  const response = await fetch(`${getApiBase()}/assignments`, { credentials: "include" });
+  const result = await parseEnvelope<AssignmentSummary[]>(response);
   if (!result.success) {
     throw new Error(result.message || "Failed to fetch assignments");
   }
@@ -18,8 +26,8 @@ export const fetchAssignments = async (): Promise<AssignmentSummary[]> => {
 };
 
 export const fetchAssignmentById = async (id: number): Promise<AssignmentDetail> => {
-  const response = await fetch(`${API_URL}/assignments/${id}`, { credentials: "include" });
-  const result: ApiEnvelope<AssignmentDetail> = await response.json();
+  const response = await fetch(`${getApiBase()}/assignments/${id}`, { credentials: "include" });
+  const result = await parseEnvelope<AssignmentDetail>(response);
   if (!result.success) {
     throw new Error(result.message || "Failed to fetch assignment");
   }
