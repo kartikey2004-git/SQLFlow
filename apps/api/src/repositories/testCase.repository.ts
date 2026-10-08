@@ -9,12 +9,12 @@ export interface TestCaseRow {
   expected_output_type: ExpectedOutputType;
   expected_output: unknown;
   is_hidden: boolean;
-  weight: string; // numeric comes back as string from pg
+  weight: string;
   order_index: number;
+  validation_sql: string | null;
 }
 
 export const TestCaseRepository = {
-  /** All test cases (visible + hidden) - grading only, never sent to the client as-is. */
   async findByAssignmentId(assignmentId: number): Promise<TestCaseRow[]> {
     const result = await pool.query<TestCaseRow>(
       `SELECT * FROM test_cases WHERE assignment_id = $1 ORDER BY order_index ASC, id ASC`,
@@ -23,7 +23,6 @@ export const TestCaseRepository = {
     return result.rows;
   },
 
-  /** Visible-only, safe to expose in assignment detail responses. */
   async findVisibleByAssignmentId(assignmentId: number): Promise<TestCaseRow[]> {
     const result = await pool.query<TestCaseRow>(
       `SELECT * FROM test_cases

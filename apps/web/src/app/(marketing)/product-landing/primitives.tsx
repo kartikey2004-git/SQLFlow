@@ -145,7 +145,6 @@ export function Container({
   );
 }
 
-/** Lets a visual scroll horizontally on narrow screens instead of squashing. */
 export function GraphScroller({
   className,
   minWidth = "640px",
@@ -168,9 +167,9 @@ export function GraphScroller({
 }
 
 const sectionDensity = {
-  tight: "py-14 md:py-18 lg:py-20",
-  default: "py-20 md:py-28 lg:py-32",
-  feature: "py-24 md:py-32 lg:py-40",
+  tight: "py-10 md:py-14 lg:py-16",
+  default: "py-14 md:py-20 lg:py-24",
+  feature: "py-16 md:py-24 lg:py-28",
 } as const;
 
 export function Section({
@@ -287,7 +286,7 @@ export function Panel({
   return (
     <div
       className={cn(
-        "relative border bg-white/[0.02] backdrop-blur-xl",
+        "relative border bg-white/[0.02]",
         emphasis
           ? "border-primary/25"
           : "border-border",
@@ -394,7 +393,6 @@ export function DotBackdrop({ className }: { className?: string }) {
   );
 }
 
-/** Auto-scrolling row that pauses on hover; content is duplicated once for a seamless loop. */
 export function Marquee({
   className,
   children,

@@ -78,9 +78,6 @@ export class HintService {
       console.warn(`Hint leak-check rejected attempt ${attempt + 1}/${MAX_REGENERATION_ATTEMPTS + 1}: ${leakResult.reason}`);
     }
 
-    // Every regeneration attempt leaked - fall back to a generic hint rather
-    // than risk showing the student a near-solution. Still logged, flagged
-    // as a failed leak check for later review.
     await HintRequestRepository.create({
       userId,
       assignmentId,

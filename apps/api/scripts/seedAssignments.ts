@@ -10,7 +10,7 @@ interface SeedTable {
 
 interface SeedAssignment {
   title: string;
-  description: string; // historically used as a difficulty label in this seed file
+  description: string;
   question: string;
   sampleTables: SeedTable[];
   expectedOutput: { type: string; value: unknown };
@@ -49,7 +49,6 @@ const seedAssignments = async () => {
           );
           assignmentId = existing.rows[0].id;
 
-          // Keep re-seeding idempotent: refresh the schema/question on re-run.
           await client.query(
             `UPDATE assignments SET question = $2, difficulty = $3, sample_tables = $4
              WHERE id = $1`,

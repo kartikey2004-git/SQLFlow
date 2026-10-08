@@ -20,7 +20,6 @@ describe("Auth flow", () => {
     expect(res.body.user.email).toBe(email);
     expect(res.body.user.role).toBe("student");
     expect(res.headers["set-cookie"]).toBeDefined();
-    // Password hash must never be present in any API response.
     expect(JSON.stringify(res.body)).not.toMatch(/argon2/);
   });
 

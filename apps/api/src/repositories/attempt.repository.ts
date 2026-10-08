@@ -10,6 +10,8 @@ export interface AttemptRow {
   completed_at: Date | null;
   schema_name: string | null;
   schema_provisioned_at: Date | null;
+  sandbox_db: string | null;
+  sandbox_provisioned_at: Date | null;
   last_attempt_at: Date;
   created_at: Date;
   updated_at: Date;
@@ -51,34 +53,32 @@ export const AttemptRepository = {
     return result.rows[0] ?? null;
   },
 
-  async setSchemaProvisioned(id: number, schemaName: string): Promise<AttemptRow> {
+  async setSandboxProvisioned(id: number, sandboxDb: string): Promise<AttemptRow> {
     const result = await pool.query<AttemptRow>(
-      `UPDATE attempts SET schema_name = $2, schema_provisioned_at = now() WHERE id = $1 RETURNING *`,
-      [id, schemaName],
+      `UPDATE attempts SET sandbox_db = $2, sandbox_provisioned_at = now() WHERE id = $1 RETURNING *`,
+      [id, sandboxDb],
     );
     return result.rows[0]!;
   },
 
-  /** Attempts whose sandbox schema hasn't been touched since `cutoff` - cleanup target. */
-  async findStaleWithSchema(cutoff: Date): Promise<AttemptRow[]> {
+  async findStaleWithSandbox(cutoff: Date): Promise<AttemptRow[]> {
     const result = await pool.query<AttemptRow>(
-      `SELECT * FROM attempts WHERE schema_name IS NOT NULL AND last_attempt_at < $1`,
+      `SELECT * FROM attempts WHERE sandbox_db IS NOT NULL AND last_attempt_at < $1`,
       [cutoff],
     );
     return result.rows;
   },
 
-  /** All currently-provisioned sandbox schema names (progress/history is kept - only the schema is recycled). */
-  async findAllSchemaNames(): Promise<string[]> {
-    const result = await pool.query<{ schema_name: string }>(
-      `SELECT schema_name FROM attempts WHERE schema_name IS NOT NULL`,
+  async findAllSandboxDbs(): Promise<string[]> {
+    const result = await pool.query<{ sandbox_db: string }>(
+      `SELECT sandbox_db FROM attempts WHERE sandbox_db IS NOT NULL`,
     );
-    return result.rows.map((r) => r.schema_name);
+    return result.rows.map((r) => r.sandbox_db);
   },
 
-  async clearSchema(id: number): Promise<void> {
+  async clearSandbox(id: number): Promise<void> {
     await pool.query(
-      `UPDATE attempts SET schema_name = NULL, schema_provisioned_at = NULL WHERE id = $1`,
+      `UPDATE attempts SET sandbox_db = NULL, sandbox_provisioned_at = NULL WHERE id = $1`,
       [id],
     );
   },
@@ -98,7 +98,6 @@ export const AttemptRepository = {
       setClauses.push(`status = 'completed'`, `completed_at = now()`);
     }
 
-    // Upsert: row may not exist yet on a user's first interaction with an assignment.
     const result = await pool.query<AttemptRow>(
       `INSERT INTO attempts (user_id, assignment_id)
        VALUES ($1, $2)

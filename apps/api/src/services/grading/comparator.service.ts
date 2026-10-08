@@ -6,22 +6,16 @@ export interface ComparisonResult {
 }
 
 export class ComparatorService {
-  /**
-   * Compare two normalized values deeply
-   */
   private static compareValues(actual: any, expected: any): boolean {
-    // Handle null/undefined consistently
     if (actual === null && expected === null) return true;
     if (actual === null || expected === null) return false;
     if (actual === undefined && expected === undefined) return true;
     if (actual === undefined || expected === undefined) return false;
 
-    // Direct comparison for primitives
     if (typeof actual !== "object" || typeof expected !== "object") {
       return actual === expected;
     }
 
-    // Both are objects - compare keys and values
     const actualKeys = Object.keys(actual).sort();
     const expectedKeys = Object.keys(expected).sort();
 
@@ -40,14 +34,10 @@ export class ComparatorService {
     return true;
   }
 
-  /**
-   * Compare table results (type: "table")
-   */
   private static compareTable(
     actual: NormalizedResult,
     expected: NormalizedResult,
   ): ComparisonResult {
-    // Check row count
     if (actual.rowCount !== expected.rowCount) {
       return {
         passed: false,
@@ -55,7 +45,6 @@ export class ComparatorService {
       };
     }
 
-    // Check column count and names
     const actualColumns = [...actual.columns].sort();
     const expectedColumns = [...expected.columns].sort();
 
@@ -75,7 +64,6 @@ export class ComparatorService {
       }
     }
 
-    // Compare each row
     for (let i = 0; i < actual.rowCount; i++) {
       if (!this.compareValues(actual.rows[i], expected.rows[i])) {
         return {
@@ -88,9 +76,6 @@ export class ComparatorService {
     return { passed: true, reason: null };
   }
 
-  /**
-   * Compare single value results (type: "single_value")
-   */
   private static compareSingleValue(
     actual: NormalizedResult,
     expected: NormalizedResult,
@@ -119,9 +104,6 @@ export class ComparatorService {
     return { passed: true, reason: null };
   }
 
-  /**
-   * Compare column results (type: "column")
-   */
   private static compareColumn(
     actual: NormalizedResult,
     expected: NormalizedResult,
@@ -140,7 +122,6 @@ export class ComparatorService {
       };
     }
 
-    // Compare each value (rows are already sorted)
     for (let i = 0; i < actual.rowCount; i++) {
       if (!this.compareValues(actual.rows[i]?.value, expected.rows[i]?.value)) {
         return {
@@ -153,9 +134,6 @@ export class ComparatorService {
     return { passed: true, reason: null };
   }
 
-  /**
-   * Compare row results (type: "row")
-   */
   private static compareRow(
     actual: NormalizedResult,
     expected: NormalizedResult,
@@ -177,7 +155,6 @@ export class ComparatorService {
       };
     }
 
-    // Check column names match
     for (let i = 0; i < actualColumns.length; i++) {
       if (actualColumns[i] !== expectedColumns[i]) {
         return {
@@ -187,7 +164,6 @@ export class ComparatorService {
       }
     }
 
-    // Compare row values
     if (!this.compareValues(actual.rows[0], expected.rows[0])) {
       return {
         passed: false,
@@ -198,9 +174,6 @@ export class ComparatorService {
     return { passed: true, reason: null };
   }
 
-  /**
-   * Compare count results (type: "count")
-   */
   private static compareCount(
     actual: NormalizedResult,
     expected: NormalizedResult,
@@ -215,9 +188,6 @@ export class ComparatorService {
     return { passed: true, reason: null };
   }
 
-  /**
-   * Main comparison function
-   */
   static compare(
     actual: NormalizedResult,
     expected: NormalizedResult,

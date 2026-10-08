@@ -1,26 +1,45 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { Loader2 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { useAuth } from "@/context/AuthContext";
+import {
+  AuthDivider,
+  AuthError,
+  AuthField,
+  AuthShell,
+  PasswordInput,
+  SocialButtons,
+} from "@/components/auth/auth-ui";
 import { Button } from "@sql-learn/ui/components/button";
 import { Input } from "@sql-learn/ui/components/input";
-import { Label } from "@sql-learn/ui/components/label";
-import { Alert, AlertDescription } from "@sql-learn/ui/components/alert";
+
+const MIN_PASSWORD_LENGTH = 8;
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { refresh } = useAuth();
+  const { user, loading: authLoading, refresh } = useAuth();
+
+  useEffect(() => {
+    if (!authLoading && user) router.replace("/assignments");
+  }, [authLoading, user, router]);
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
+  const invalid = error !== null;
+  const passwordError =
+    password.length > 0 && password.length < MIN_PASSWORD_LENGTH
+      ? `Use at least ${MIN_PASSWORD_LENGTH} characters.`
+      : undefined;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (passwordError) return;
     setError(null);
     setSubmitting(true);
     try {
@@ -30,81 +49,99 @@ export default function RegisterPage() {
         name: displayName,
       });
       if (signUpError) {
-        setError(signUpError.message ?? "Failed to register");
+        setError(signUpError.message ?? "Could not create your account. Try a different email.");
         return;
       }
       await refresh();
       router.push("/assignments");
+    } catch {
+      setError("Something went wrong. Please try again.");
     } finally {
       setSubmitting(false);
     }
   };
 
   const handleSocial = async (provider: "google" | "github") => {
-    await authClient.signIn.social({ provider, callbackURL: "/assignments" });
+    setError(null);
+    try {
+      await authClient.signIn.social({ provider, callbackURL: `${window.location.origin}/assignments` });
+    } catch {
+      setError(`Could not start ${provider === "google" ? "Google" : "GitHub"} sign-up. Try again.`);
+    }
   };
 
+  if (!authLoading && user) return null;
+
   return (
-    <div className="flex min-h-[calc(100vh-65px)] items-center justify-center bg-neutral-50 p-8">
-      <form
-        className="flex w-full max-w-[360px] flex-col gap-4 rounded-lg border border-neutral-200 bg-white p-8 shadow-sm"
-        onSubmit={handleSubmit}
-      >
-        <h1 className="mb-2 text-2xl font-semibold text-neutral-900">Create an account</h1>
-        {error && (
-          <Alert variant="destructive">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="displayName" className="text-neutral-700">
-            Display name
-          </Label>
+    <AuthShell mode="register" title="Create your account" subtitle="Start practising SQL against real databases.">
+      <form className="flex flex-col gap-5" onSubmit={handleSubmit} aria-busy={submitting}>
+        {error && <AuthError message={error} />}
+
+        <AuthField id="displayName" label="Display name">
           <Input
             id="displayName"
             type="text"
+            name="name"
+            autoComplete="name"
+            autoFocus
             required
+            disabled={submitting}
+            aria-invalid={invalid || undefined}
+            placeholder="How should we greet you?"
+            className="h-10"
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
           />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="email" className="text-neutral-700">
-            Email
-          </Label>
-          <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="password" className="text-neutral-700">
-            Password
-          </Label>
+        </AuthField>
+
+        <AuthField id="email" label="Email">
           <Input
-            id="password"
-            type="password"
+            id="email"
+            type="email"
+            name="email"
+            autoComplete="email"
             required
-            minLength={8}
+            disabled={submitting}
+            aria-invalid={invalid || undefined}
+            placeholder="you@example.com"
+            className="h-10"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+        </AuthField>
+
+        <AuthField
+          id="password"
+          label="Password"
+          hint={`Min. ${MIN_PASSWORD_LENGTH} characters`}
+          error={passwordError}
+        >
+          <PasswordInput
+            id="password"
+            name="password"
+            autoComplete="new-password"
+            required
+            minLength={MIN_PASSWORD_LENGTH}
+            disabled={submitting}
+            aria-invalid={passwordError || invalid ? true : undefined}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-        </div>
-        <Button type="submit" disabled={submitting} className="mt-2">
-          {submitting ? "Creating account..." : "Sign up"}
+        </AuthField>
+
+        <Button type="submit" size="lg" disabled={submitting || Boolean(passwordError)} className="h-10 w-full">
+          {submitting && <Loader2 className="animate-spin" />}
+          {submitting ? "Creating account..." : "Create account"}
         </Button>
-        <div className="flex flex-col gap-2">
-          <Button type="button" variant="outline" onClick={() => handleSocial("google")}>
-            Continue with Google
-          </Button>
-          <Button type="button" variant="outline" onClick={() => handleSocial("github")}>
-            Continue with GitHub
-          </Button>
-        </div>
-        <p className="text-center text-sm text-neutral-500">
-          Already have an account?{" "}
-          <Link href="/login" className="text-blue-600 hover:underline">
-            Log in
-          </Link>
+
+        <p role="status" aria-live="polite" className="sr-only">
+          {submitting ? "Creating your account, please wait." : ""}
         </p>
+
+        <AuthDivider />
+
+        <SocialButtons disabled={submitting} onSelect={handleSocial} />
       </form>
-    </div>
+    </AuthShell>
   );
 }

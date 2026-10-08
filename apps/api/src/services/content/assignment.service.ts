@@ -15,11 +15,6 @@ export class AssignmentService {
     }));
   }
 
-  /**
-   * Student-facing assignment detail. Never includes solution_sql, and only
-   * includes expected_output for non-hidden test cases - hidden test cases
-   * are exposed as {id, name, isHidden: true} with no expected value.
-   */
   async getAssignmentById(id: number): Promise<AssignmentDetail> {
     const assignment = await AssignmentRepository.findPublicById(id);
     if (!assignment) {

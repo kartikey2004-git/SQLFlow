@@ -1,159 +1,266 @@
-import { pool } from "@sql-learn/database";
+import { createHash } from "node:crypto";
+import pg from "pg";
 import { AssignmentRepository } from "../../repositories/assignment.repository";
 import { AttemptRepository } from "../../repositories/attempt.repository";
 import { ApiError } from "../../utils/ApiError";
+import { logger } from "../../utils/logger";
 import type { SampleTableRow } from "../../repositories/assignment.repository";
+import {
+  adminUrlForDb,
+  getSandboxAdminPool,
+  gradingDbName,
+  gradingRole,
+  quoteIdent,
+  quoteLiteral,
+  rolePasswordFor,
+  studentDbName,
+  studentRole,
+  templateDbName,
+} from "./sandboxDb";
+
+const { Client } = pg;
+
+const ROLE_CONNECTION_LIMIT = 3;
+const ROLE_SETTINGS: Record<string, string> = {
+  statement_timeout: "10s",
+  lock_timeout: "3s",
+  idle_in_transaction_session_timeout: "15s",
+  work_mem: "8MB",
+  temp_file_limit: "64MB",
+  max_parallel_workers_per_gather: "0",
+};
+
+type Queryable = { query: (sql: string, params?: unknown[]) => Promise<pg.QueryResult> };
 
 export class SandboxService {
-  static generateSchemaName(userId: number, assignmentId: number): string {
-    const schemaName = `sb_u${userId}_a${assignmentId}`;
-    return schemaName.length > 63 ? schemaName.substring(0, 63) : schemaName;
-  }
 
-  /**
-   * Postgres identifier for a student's own per-user role (see
-   * migrations/1700000000002_sandbox_runner_role.cjs's header comment and
-   * ExecutionService.executeQuery for how this is activated). One role per
-   * *user*, covering every schema that user has - not one per schema, since
-   * a student accumulates a schema per assignment.
-   */
-  static sandboxUserRole(userId: number): string {
-    return `sandbox_user_${userId}`;
-  }
-
-  /**
-   * Ensures `userId`'s NOLOGIN Postgres role exists and that `sandbox_runner`
-   * is a member of it **without inheriting it** (`WITH INHERIT FALSE`,
-   * PostgreSQL 16+). This is the actual defense-in-depth backstop behind the
-   * AST validator's schema-qualification check (see validation.service.ts):
-   * `sandbox_runner`'s own privilege set never includes any student's
-   * schema grants - a session must explicitly `SET ROLE` to *this exact*
-   * per-user role (ExecutionService does so, scoped to the query's own
-   * `userId`) to use them. Even if the AST validator had a bug that let a
-   * schema-qualified reference to another student's schema through, the
-   * role activated for that session would still lack any grant on it, and
-   * Postgres itself would reject the query with "permission denied for
-   * schema ...". See tests/security/sandboxIsolation.test.ts.
-   */
-  private static async ensureUserRole(client: import("pg").PoolClient, userId: number): Promise<string> {
-    const roleName = this.sandboxUserRole(userId);
-    // roleName is built from a numeric userId (never user-controlled text),
-    // never from user input - safe to interpolate as an identifier, same
-    // reasoning as schemaName below.
-    await client.query(`
-      DO $$
-      BEGIN
-        IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = '${roleName}') THEN
-          CREATE ROLE "${roleName}" NOLOGIN;
-        END IF;
-      END
-      $$;
-    `);
-    await client.query(`GRANT "${roleName}" TO sandbox_runner WITH INHERIT FALSE`);
-    return roleName;
-  }
-
-  /**
-   * Creates the schema and grants the student's own per-user role (not
-   * `sandbox_runner` directly - see ensureUserRole) SELECT on it. ALTER
-   * DEFAULT PRIVILEGES is applied *before* the tables are created (by the
-   * admin role, in this same connection) so the role automatically gets
-   * SELECT on every table this provisioning step creates, without a second
-   * grant pass.
-   */
-  private static async createSchema(
-    client: import("pg").PoolClient,
-    schemaName: string,
-    userId: number,
-  ): Promise<void> {
-    const roleName = await this.ensureUserRole(client, userId);
-    await client.query(`CREATE SCHEMA IF NOT EXISTS "${schemaName}"`);
-    await client.query(`GRANT USAGE ON SCHEMA "${schemaName}" TO "${roleName}"`);
-    await client.query(
-      `ALTER DEFAULT PRIVILEGES IN SCHEMA "${schemaName}" GRANT SELECT ON TABLES TO "${roleName}"`,
-    );
-  }
-
-  private static generateCreateTableStatement(schemaName: string, table: SampleTableRow): string {
-    const columnDefinitions = table.columns
-      .map((column) => `"${column.columnName}" ${column.dataType}`)
-      .join(", ");
-    return `CREATE TABLE "${schemaName}"."${table.tableName}" (${columnDefinitions})`;
-  }
-
-  private static async createTables(
-    client: import("pg").PoolClient,
-    schemaName: string,
-    sampleTables: SampleTableRow[],
-  ): Promise<void> {
-    for (const table of sampleTables) {
-      await client.query(this.generateCreateTableStatement(schemaName, table));
-    }
-  }
-
-  private static generateInsertStatement(
-    schemaName: string,
-    tableName: string,
-    row: Record<string, unknown>,
-    columns: { columnName: string; dataType: string }[],
-  ): string {
-    const columnNames = columns.map((col) => `"${col.columnName}"`).join(", ");
-    const values = columns
-      .map((col) => {
-        const value = row[col.columnName];
-        if (value === null || value === undefined) return "NULL";
-        if (typeof value === "string") return `'${value.replace(/'/g, "''")}'`;
-        if (typeof value === "number" || typeof value === "boolean") return String(value);
-        return `'${JSON.stringify(value).replace(/'/g, "''")}'`;
-      })
-      .join(", ");
-    return `INSERT INTO "${schemaName}"."${tableName}" (${columnNames}) VALUES (${values})`;
-  }
-
-  private static async insertRows(
-    client: import("pg").PoolClient,
-    schemaName: string,
-    sampleTables: SampleTableRow[],
-  ): Promise<void> {
-    for (const table of sampleTables) {
-      for (const row of table.rows) {
-        await client.query(this.generateInsertStatement(schemaName, table.tableName, row, table.columns));
+  private static async ensureRole(admin: Queryable, role: string): Promise<void> {
+    const exists = await admin.query(`SELECT 1 FROM pg_roles WHERE rolname = $1`, [role]);
+    const tail =
+      `NOINHERIT CONNECTION LIMIT ${ROLE_CONNECTION_LIMIT} PASSWORD ${quoteLiteral(rolePasswordFor(role))}`;
+    if (exists.rowCount === 0) {
+      try {
+        await admin.query(`CREATE ROLE ${quoteIdent(role)} LOGIN ${tail}`);
+      } catch (e) {
+        if ((e as { code?: string }).code !== "42710") throw e;
       }
     }
+    await admin.query(`ALTER ROLE ${quoteIdent(role)} LOGIN NOCREATEDB NOCREATEROLE ${tail}`);
+    for (const [k, v] of Object.entries(ROLE_SETTINGS)) {
+      try {
+        await admin.query(`ALTER ROLE ${quoteIdent(role)} SET ${k} = ${quoteLiteral(v)}`);
+      } catch (err) {
+        if ((err as { code?: string }).code !== "42501") throw err;
+        logger.warn({ param: k }, "Could not set role-level parameter; rely on instance-level setting");
+      }
+    }
+    await admin.query(`GRANT ${quoteIdent(role)} TO CURRENT_USER WITH INHERIT TRUE, SET TRUE`).catch(() => {});
   }
 
-  static async initSandbox(
+  static async dropRole(admin: Queryable, role: string): Promise<void> {
+    await admin.query(`DROP ROLE IF EXISTS ${quoteIdent(role)}`);
+  }
+
+  private static tableDdl(table: SampleTableRow): string {
+    const cols = table.columns.map((c) => `${quoteIdent(c.columnName)} ${c.dataType}`).join(", ");
+    return `CREATE TABLE public.${quoteIdent(table.tableName)} (${cols})`;
+  }
+
+  private static insertSql(table: SampleTableRow, row: Record<string, unknown>): string {
+    const names = table.columns.map((c) => quoteIdent(c.columnName)).join(", ");
+    const values = table.columns
+      .map((c) => {
+        const v = row[c.columnName];
+        if (v === null || v === undefined) return "NULL";
+        if (typeof v === "number" || typeof v === "boolean") return String(v);
+        if (typeof v === "string") return quoteLiteral(v);
+        return quoteLiteral(JSON.stringify(v));
+      })
+      .join(", ");
+    return `INSERT INTO public.${quoteIdent(table.tableName)} (${names}) VALUES (${values})`;
+  }
+
+  private static async withTemplate<T>(
+    assignmentId: number,
+    sampleTables: SampleTableRow[],
+    fn: (tpl: string) => Promise<T>,
+  ): Promise<T> {
+    const tpl = templateDbName(assignmentId);
+    const hash = createHash("sha256").update(JSON.stringify(sampleTables)).digest("hex");
+    const lockKey = `sqlflow-template-${assignmentId}`;
+    const lockClient = await getSandboxAdminPool().connect();
+    try {
+      const current = async () => {
+        const r = await lockClient.query<{ c: string | null }>(
+          `SELECT shobj_description(oid, 'pg_database') AS c FROM pg_database WHERE datname = $1`,
+          [tpl],
+        );
+        return r.rowCount === 0 ? "missing" : (r.rows[0]!.c ?? "");
+      };
+
+      if ((await current()) !== hash) {
+        await lockClient.query(`SELECT pg_advisory_lock(hashtext($1))`, [lockKey]);
+        try {
+          if ((await current()) !== hash) await this.buildTemplate(lockClient, tpl, sampleTables, hash);
+        } finally {
+          await lockClient.query(`SELECT pg_advisory_unlock(hashtext($1))`, [lockKey]);
+        }
+      }
+      await lockClient.query(`SELECT pg_advisory_lock_shared(hashtext($1))`, [lockKey]);
+      try {
+        return await fn(tpl);
+      } finally {
+        await lockClient.query(`SELECT pg_advisory_unlock_shared(hashtext($1))`, [lockKey]);
+      }
+    } finally {
+      lockClient.release();
+    }
+  }
+
+  private static async buildTemplate(
+    admin: Queryable,
+    tpl: string,
+    sampleTables: SampleTableRow[],
+    hash: string,
+  ): Promise<void> {
+    await admin.query(`DROP DATABASE IF EXISTS ${quoteIdent(tpl)} WITH (FORCE)`);
+    await admin.query(`CREATE DATABASE ${quoteIdent(tpl)}`);
+    const c = new Client({ connectionString: adminUrlForDb(tpl) });
+    await c.connect();
+    try {
+      await c.query("BEGIN");
+      for (const table of sampleTables) {
+        await c.query(this.tableDdl(table));
+        for (const row of table.rows) await c.query(this.insertSql(table, row));
+      }
+      await c.query("COMMIT");
+    } catch (e) {
+      await c.query("ROLLBACK").catch(() => {});
+      throw e;
+    } finally {
+      await c.end();
+    }
+    await admin.query(`REVOKE CONNECT ON DATABASE ${quoteIdent(tpl)} FROM PUBLIC`);
+    await admin.query(`COMMENT ON DATABASE ${quoteIdent(tpl)} IS ${quoteLiteral(hash)}`);
+  }
+
+  private static async cloneFromTemplate(admin: Queryable, tpl: string, db: string, role: string): Promise<void> {
+    await admin.query(`CREATE DATABASE ${quoteIdent(db)} TEMPLATE ${quoteIdent(tpl)} OWNER ${quoteIdent(role)}`);
+    await admin.query(`REVOKE ALL ON DATABASE ${quoteIdent(db)} FROM PUBLIC`);
+    await admin.query(`GRANT CONNECT ON DATABASE ${quoteIdent(db)} TO ${quoteIdent(role)}`);
+    await admin.query(`ALTER DATABASE ${quoteIdent(db)} CONNECTION LIMIT ${ROLE_CONNECTION_LIMIT + 2}`);
+    await admin.query(`COMMENT ON DATABASE ${quoteIdent(db)} IS ${quoteLiteral(`created=${new Date().toISOString()}`)}`);
+
+    const c = new Client({ connectionString: adminUrlForDb(db) });
+    await c.connect();
+    try {
+      const rels = await c.query<{ ident: string }>(
+        `SELECT format('%I.%I', n.nspname, c.relname) AS ident
+           FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+          WHERE n.nspname = 'public' AND c.relkind IN ('r','p','v','m','S','f')
+            AND NOT EXISTS (SELECT 1 FROM pg_depend d WHERE d.objid = c.oid AND d.deptype IN ('a','i'))`,
+      );
+      for (const r of rels.rows) await c.query(`ALTER TABLE ${r.ident} OWNER TO ${quoteIdent(role)}`);
+      await c.query(`ALTER SCHEMA public OWNER TO ${quoteIdent(role)}`);
+      await c.query(`REVOKE ALL ON SCHEMA public FROM PUBLIC`);
+    } finally {
+      await c.end();
+    }
+  }
+
+  static async dropDatabase(admin: Queryable, db: string): Promise<void> {
+    await admin.query(`DROP DATABASE IF EXISTS ${quoteIdent(db)} WITH (FORCE)`);
+  }
+
+  private static async requireAssignment(assignmentId: number) {
+    const assignment = await AssignmentRepository.findPublicById(assignmentId);
+    if (!assignment) throw new ApiError(404, "Assignment not found");
+    return assignment;
+  }
+
+  static async initSandbox(userId: number, assignmentId: number): Promise<{ db: string; created: boolean }> {
+    const db = studentDbName(userId, assignmentId);
+    const assignment = await this.requireAssignment(assignmentId);
+    const created = await this.createStudentDb(userId, assignmentId, assignment.sample_tables, false);
+    const attempt = await AttemptRepository.getOrCreate(userId, assignmentId);
+    await AttemptRepository.setSandboxProvisioned(attempt.id, db);
+    return { db, created };
+  }
+
+  static async resetSandbox(userId: number, assignmentId: number): Promise<{ db: string; created: boolean }> {
+    const db = studentDbName(userId, assignmentId);
+    const assignment = await this.requireAssignment(assignmentId);
+    await this.createStudentDb(userId, assignmentId, assignment.sample_tables, true);
+    const attempt = await AttemptRepository.getOrCreate(userId, assignmentId);
+    await AttemptRepository.setSandboxProvisioned(attempt.id, db);
+    return { db, created: true };
+  }
+
+  private static async createStudentDb(
     userId: number,
     assignmentId: number,
-  ): Promise<{ schemaName: string; isNew: boolean }> {
-    const existingAttempt = await AttemptRepository.findByUserAndAssignment(userId, assignmentId);
-    if (existingAttempt?.schema_name) {
-      return { schemaName: existingAttempt.schema_name, isNew: false };
-    }
-
-    const assignment = await AssignmentRepository.findPublicById(assignmentId);
-    if (!assignment) {
-      throw new ApiError(404, "Assignment not found");
-    }
-
-    const schemaName = this.generateSchemaName(userId, assignmentId);
-    const client = await pool.connect();
+    sampleTables: SampleTableRow[],
+    drop: boolean,
+  ): Promise<boolean> {
+    const admin = getSandboxAdminPool();
+    const role = studentRole(userId);
+    const db = studentDbName(userId, assignmentId);
+    const lockKey = `sqlflow-student-${db}`;
+    const lock = await admin.connect();
     try {
-      await client.query("BEGIN");
-      await this.createSchema(client, schemaName, userId);
-      await this.createTables(client, schemaName, assignment.sample_tables);
-      await this.insertRows(client, schemaName, assignment.sample_tables);
-      await client.query("COMMIT");
-    } catch (error) {
-      await client.query("ROLLBACK");
-      throw error;
+      await lock.query(`SELECT pg_advisory_lock(hashtext($1))`, [lockKey]);
+      try {
+        await this.ensureRole(lock, role);
+        const present = await lock.query(`SELECT 1 FROM pg_database WHERE datname = $1`, [db]);
+        if (present.rowCount && !drop) return false;
+        if (present.rowCount) await this.dropDatabase(lock, db);
+        await this.withTemplate(assignmentId, sampleTables, (tpl) => this.cloneFromTemplate(lock, tpl, db, role));
+        return true;
+      } finally {
+        await lock.query(`SELECT pg_advisory_unlock(hashtext($1))`, [lockKey]);
+      }
     } finally {
-      client.release();
+      lock.release();
     }
+  }
 
-    const attempt = await AttemptRepository.getOrCreate(userId, assignmentId);
-    await AttemptRepository.setSchemaProvisioned(attempt.id, schemaName);
+  static async createGradingDb(submissionId: number, assignmentId: number): Promise<{ db: string; role: string }> {
+    const assignment = await this.requireAssignment(assignmentId);
+    const admin = getSandboxAdminPool();
+    const db = gradingDbName(submissionId);
+    const role = gradingRole(submissionId);
+    await this.dropDatabase(admin, db);
+    await this.ensureRole(admin, role);
+    await this.withTemplate(assignmentId, assignment.sample_tables, (tpl) =>
+      this.cloneFromTemplate(admin, tpl, db, role),
+    );
+    return { db, role };
+  }
 
-    return { schemaName, isNew: true };
+  static async destroyGradingDb(submissionId: number): Promise<void> {
+    const admin = getSandboxAdminPool();
+    await this.dropDatabase(admin, gradingDbName(submissionId)).catch(() => {});
+    await this.dropRole(admin, gradingRole(submissionId)).catch(() => {});
+  }
+
+  static async hardenInstance(): Promise<void> {
+    const admin = getSandboxAdminPool();
+    for (const db of ["postgres", "template1"]) {
+      await admin.query(`REVOKE CONNECT ON DATABASE ${quoteIdent(db)} FROM PUBLIC`).catch((err) => {
+        logger.warn({ err, db }, "Could not revoke PUBLIC CONNECT (is the admin the database owner?)");
+      });
+    }
+  }
+
+  static async databaseSize(db: string): Promise<number> {
+    const r = await getSandboxAdminPool().query<{ s: string }>(`SELECT pg_database_size($1) AS s`, [db]);
+    return Number(r.rows[0]?.s ?? 0);
+  }
+
+  static async cancelBackend(pid: number, terminate: boolean): Promise<void> {
+    await getSandboxAdminPool().query(
+      terminate ? `SELECT pg_terminate_backend($1)` : `SELECT pg_cancel_backend($1)`,
+      [pid],
+    );
   }
 }

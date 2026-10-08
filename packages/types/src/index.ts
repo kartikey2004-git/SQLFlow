@@ -1,7 +1,3 @@
-// Shared DTOs between apps/api and apps/web.
-// These mirror the Postgres schema (apps/api/migrations) but are the
-// wire-shape (camelCase, string dates) returned by the API - not the
-// row shape used internally by repositories.
 
 export type UserRole = "student" | "instructor" | "admin";
 
@@ -26,7 +22,6 @@ export interface SampleTable {
   rows: Record<string, unknown>[];
 }
 
-/** Assignment list item - no schema/solution payload. */
 export interface AssignmentSummary {
   id: number;
   title: string;
@@ -35,11 +30,6 @@ export interface AssignmentSummary {
   createdAt: string;
 }
 
-/**
- * Full assignment detail served to students.
- * Intentionally excludes `solutionSql` and any hidden test case's
- * `expectedOutput` - those never leave the server.
- */
 export interface AssignmentDetail extends AssignmentSummary {
   question: string;
   sampleTables: SampleTable[];
@@ -48,19 +38,34 @@ export interface AssignmentDetail extends AssignmentSummary {
 
 export type ExpectedOutputType = "table" | "single_value" | "column" | "row" | "count";
 
+
 export interface VisibleTestCase {
   id: number;
   name: string | null;
   isHidden: boolean;
-  /** Only present when isHidden is false. */
   expectedOutput?: { type: ExpectedOutputType; value: unknown };
 }
 
-export interface QueryResult {
+export interface StatementResult {
+  index: number;
+  command: string;
+  rowCount: number | null;
   columns: string[];
   rows: Record<string, unknown>[];
-  rowCount: number;
+  truncated: boolean;
+  durationMs: number;
+  error?: { message: string; code?: string; position?: number };
+}
+
+export interface QueryResult {
+  statements: StatementResult[];
   executionTime: number;
+  aborted: boolean;
+}
+
+export interface SandboxProvisionResult {
+  sandboxReady: true;
+  created: boolean;
 }
 
 export interface EvaluationResultDTO {
@@ -76,10 +81,10 @@ export interface GradingResult {
   score: number;
   executionTime: number;
   rowCount: number;
+  statements?: StatementResult[];
   results: EvaluationResultDTO[];
 }
 
-/** Progress on a single assignment (apps/api ProgressService.ProgressData). */
 export interface ProgressData {
   lastQuery: string;
   attemptCount: number;
@@ -105,10 +110,9 @@ export interface JobError {
   statusCode: number;
 }
 
-/** Output of a sandbox_jobs job - exactly one of `error`/`result` is set once state is 'completed'. */
 export interface JobOutput {
   error?: JobError;
-  result?: QueryResult | GradingResult;
+  result?: QueryResult | GradingResult | SandboxProvisionResult;
 }
 
 export interface JobStatus {
@@ -117,7 +121,6 @@ export interface JobStatus {
   output: JobOutput | null;
 }
 
-/** Envelope every API response is wrapped in (apps/api ApiResponse class). */
 export interface ApiEnvelope<T> {
   success: boolean;
   statusCode: number;

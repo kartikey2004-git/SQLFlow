@@ -26,8 +26,6 @@ export const queryTimeoutTotal = new Counter({
   registers: [registry],
 });
 
-// Pull-based: scraped on /metrics, not pushed per-job - avoids coupling the
-// worker/API to a metrics push path just for a gauge.
 new Gauge({
   name: "sandbox_queue_depth",
   help: "Current pg-boss sandbox_jobs queue depth by state",
@@ -42,7 +40,7 @@ new Gauge({
       this.set({ state: "active" }, queue.activeCount);
       this.set({ state: "failed" }, queue.failedCount);
     } catch {
-      // Scrape shouldn't fail the whole /metrics response if pg-boss is briefly unavailable.
+      return;
     }
   },
 });

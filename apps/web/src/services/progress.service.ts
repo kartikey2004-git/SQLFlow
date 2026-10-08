@@ -1,6 +1,6 @@
 import type { ProgressData } from "@sql-learn/types";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+import { API_URL } from "@/lib/config";
 
 interface ApiEnvelope<T> {
   success: boolean;
@@ -26,7 +26,7 @@ export const getProgress = (assignmentId: number): Promise<ProgressData> =>
 
 export const updateProgress = (
   assignmentId: number,
-  updates: { lastQuery?: string; incrementAttempt?: boolean; markCompleted?: boolean },
+  updates: { lastQuery?: string; incrementAttempt?: boolean },
 ): Promise<ProgressData> =>
   request(`/progress/${assignmentId}`, { method: "PUT", body: JSON.stringify(updates) });
 

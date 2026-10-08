@@ -30,12 +30,6 @@ export const EvaluationResultRepository = {
     );
   },
 
-  /**
-   * Same as bulkInsert, but overwrites an existing row for
-   * (submission_id, test_case_id) instead of erroring - needed when a
-   * crashed-mid-grade submission is retried against the same submission
-   * row (see GradingService) and a partial result set may already exist.
-   */
   async bulkUpsert(
     submissionId: number,
     results: { testCaseId: number; passed: boolean; details?: unknown }[],

@@ -1,19 +1,6 @@
-/*
- * Tailwind v4 is CSS-first - this file only overrides the handful of design
- * tokens that genuinely diverge from Tailwind's stock palette/scale (see
- * plan Context: most of the app's original SCSS tokens are exact matches
- * for Tailwind defaults, e.g. $blue-600 === Tailwind's blue-600).
- */
 @theme {
-  /* Near-black used across the SQL workspace design system ($gray-900:
-     #0f0f0f in the original SCSS). The rest of that file's $gray-* scale
-     is an exact match for Tailwind's "neutral" family (not "gray", which
-     is cooler/bluer), e.g. $gray-200: #e5e5e5 === neutral-200, so this
-     overrides neutral-900 (stock #171717) rather than gray-900. */
   --color-neutral-900: #0f0f0f;
 
-  /* One-off amber "hint" accent (hint button/panel gradient) - not part of
-     Tailwind's default palette. */
   --color-amber-hint-50: #fef3c7;
   --color-amber-hint-100: #fde68a;
   --color-amber-hint-500: #f59e0b;
@@ -21,9 +8,6 @@
   --color-amber-hint-700: #92400e;
   --color-amber-hint-900: #78350f;
 
-  /* Dark navbar/auth surface - distinct from the light product-page theme
-     (see plan Context: no dark-mode toggle, this is an intentional
-     always-dark accent for the nav bar and auth pages). */
   --color-surface-dark: #111111;
   --color-surface-dark-alt: #1a1a1a;
   --color-surface-dark-border: #2a2a2a;

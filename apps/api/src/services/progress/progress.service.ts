@@ -31,9 +31,15 @@ export class ProgressService {
   static async updateProgress(
     userId: number,
     assignmentId: number,
-    updates: AttemptUpdate,
+    updates: Omit<AttemptUpdate, "markCompleted">,
   ): Promise<ProgressData> {
-    const attempt = await AttemptRepository.update(userId, assignmentId, updates);
+    const { lastQuery, incrementAttempt } = updates;
+    const attempt = await AttemptRepository.update(userId, assignmentId, { lastQuery, incrementAttempt });
+    return toProgressData(attempt);
+  }
+
+  static async markCompletedFromGrading(userId: number, assignmentId: number): Promise<ProgressData> {
+    const attempt = await AttemptRepository.update(userId, assignmentId, { markCompleted: true });
     return toProgressData(attempt);
   }
 

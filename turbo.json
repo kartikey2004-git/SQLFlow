@@ -3,6 +3,7 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
+      "env": ["API_ORIGIN", "NEXT_PUBLIC_API_URL", "NEXT_PUBLIC_AUTH_URL"],
       "outputs": [".next/**", "!.next/cache/**"]
     },
     "dev": {
@@ -20,7 +21,8 @@
       "outputs": []
     },
     "test": {
-      "cache": false
+      "cache": false,
+      "env": ["TEST_DATABASE_URL","TEST_SANDBOX_ADMIN_DATABASE_URL","SANDBOX_ROLE_SECRET","CLEANUP_TOKEN","CORS_ORIGIN","GOOGLE_GENERATIVE_AI_API_KEY"]
     }
   }
 }

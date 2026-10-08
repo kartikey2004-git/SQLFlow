@@ -25,6 +25,6 @@ describe("Cleanup endpoints (fail-closed authorization)", () => {
       .get("/cleanup/stats")
       .set("x-cleanup-authorization", process.env.CLEANUP_TOKEN!);
     expect(res.status).toBe(200);
-    expect(res.body.data).toHaveProperty("totalProvisionedSandboxes");
+    expect(res.body.data).toHaveProperty("provisionedSandboxes");
   });
 });

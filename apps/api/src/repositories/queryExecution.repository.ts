@@ -3,14 +3,6 @@ import { pool } from "@sql-learn/database";
 export type QueryExecutionStatus = "success" | "error" | "timeout";
 
 export const QueryExecutionRepository = {
-  /**
-   * Logs one query execution. When called with a `jobId` (queue-driven
-   * executions), the insert is deduped via `ON CONFLICT (job_id) DO
-   * NOTHING` so a pg-boss retry of the same job can't produce a second log
-   * row for one execution (see migrations/1700000000006). Direct callers
-   * (tests calling ExecutionService without the queue) omit jobId and keep
-   * the previous plain-INSERT behavior.
-   */
   async log(data: {
     attemptId: number;
     sqlText: string;

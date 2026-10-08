@@ -5,6 +5,7 @@ import { toNodeHandler } from "better-auth/node";
 import { auth } from "@sql-learn/auth";
 import { pool } from "@sql-learn/database";
 import { getBoss } from "./queue/boss";
+import { parseCorsOrigins } from "./config/env";
 import { ApiError } from "./utils/ApiError";
 import { logger, requestLogger } from "./utils/logger";
 import { registry, httpRequestDuration } from "./utils/metrics";
@@ -14,24 +15,16 @@ import progressRoutes from "./routes/progress.routes";
 import hintRoutes from "./routes/hint.routes";
 import cleanupRoutes from "./routes/cleanup.routes";
 
-/**
- * Express app configuration, kept separate from index.ts's server bootstrap
- * (dotenv loading, env validation, .listen()) so tests can import and drive
- * `app` directly via supertest without binding a real port.
- */
 export const createApp = () => {
   const app = express();
   app.set("trust proxy", 1);
 
-  const corsOrigin = process.env.CORS_ORIGIN;
-  if (!corsOrigin) {
+  const corsOrigin = parseCorsOrigins(process.env.CORS_ORIGIN);
+  if (corsOrigin.length === 0) {
     throw new Error("CORS_ORIGIN must be set - refusing to start without it (see .env.example)");
   }
   app.use(cors({ origin: corsOrigin, credentials: true }));
 
-  // Mounted before express.json() - Better Auth needs the raw request stream.
-  // Express 5's path-to-regexp (v8) requires a named wildcard - bare "*" is
-  // no longer valid syntax (unlike Express 4).
   app.all("/auth/*splat", toNodeHandler(auth));
 
   app.use(express.json());
@@ -50,6 +43,10 @@ export const createApp = () => {
     next();
   });
 
+  app.get("/livez", (_req, res) => {
+    res.json({ ok: true });
+  });
+
   app.get("/health", async (_req, res) => {
     try {
       await pool.query("SELECT 1");
@@ -62,7 +59,17 @@ export const createApp = () => {
     }
   });
 
-  app.get("/metrics", async (_req, res) => {
+  app.get("/metrics", async (req, res) => {
+    const token = process.env.METRICS_TOKEN;
+    if (token) {
+      if (req.header("x-metrics-token") !== token) {
+        res.status(401).json({ success: false, message: "Unauthorized" });
+        return;
+      }
+    } else if (process.env.NODE_ENV === "production") {
+      res.status(404).end();
+      return;
+    }
     res.set("Content-Type", registry.contentType);
     res.end(await registry.metrics());
   });

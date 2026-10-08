@@ -1,9 +1,13 @@
 import "dotenv/config";
 import { createServer } from "http";
-import { connectPostgres } from "@sql-learn/database";
-import { getBoss, SANDBOX_QUEUE } from "./queue/boss";
-import type { SandboxJobPayload, SandboxJobOutput } from "./queue/types";
+import { connectPostgres, pool } from "@sql-learn/database";
+import { loadWorkerEnv } from "./config/env";
+import { getBoss, stopBoss, SANDBOX_QUEUE, MAINTENANCE_QUEUE } from "./queue/boss";
+import type { SandboxJobPayload, SandboxJobOutput, MaintenanceJobPayload } from "./queue/types";
 import { ExecutionService, ExecutionServiceError } from "./services/sandbox/execution.service";
+import { SandboxService } from "./services/sandbox/sandbox.service";
+import { MaintenanceService } from "./services/sandbox/maintenance.service";
+import { closeSandboxAdminPool } from "./services/sandbox/sandboxDb";
 import { GradingService } from "./services/grading/grading.service";
 import { ApiError } from "./utils/ApiError";
 import { logger } from "./utils/logger";
@@ -11,24 +15,17 @@ import { registry } from "./utils/metrics";
 import type { Job } from "pg-boss";
 
 const STATUS_BY_EXECUTION_ERROR: Record<string, number> = {
-  VALIDATION_ERROR: 400,
   SANDBOX_NOT_FOUND: 404,
-  TIMEOUT: 408,
-  PERMISSION_ERROR: 403,
-  SYNTAX_ERROR: 400,
-  RUNTIME_ERROR: 400,
+  QUOTA_EXCEEDED: 413,
 };
 
 const run = async () => {
+  const env = loadWorkerEnv();
   await connectPostgres();
+  await SandboxService.hardenInstance();
   const boss = await getBoss();
 
-  // localConcurrency = number of jobs this worker process handles in
-  // parallel (pg-boss v12 API - see node_modules/pg-boss/dist/types.d.ts,
-  // WorkConcurrencyOptions). Configurable per prompt.md §17 rather than
-  // hardcoded, since the right value depends on the deployment's DB
-  // connection budget (sandboxPool caps at 10 - see packages/database).
-  const localConcurrency = Number(process.env.WORKER_CONCURRENCY ?? 4);
+  const localConcurrency = env.WORKER_CONCURRENCY;
 
   await boss.work<SandboxJobPayload, SandboxJobOutput>(
     SANDBOX_QUEUE,
@@ -38,17 +35,23 @@ const run = async () => {
       const jobId = job!.id;
 
       try {
-        if (type === "execute_query") {
-          const result = await ExecutionService.executeQuery(userId, assignmentId, query, jobId);
-          return { result };
+        switch (type) {
+          case "execute_query":
+            return { result: await ExecutionService.executeQuery(userId, assignmentId, query, jobId) };
+          case "evaluate_submission":
+            return { result: await GradingService.gradeSubmission(userId, assignmentId, query, jobId) };
+          case "init_sandbox": {
+            const { created } = await SandboxService.initSandbox(userId, assignmentId);
+            return { result: { sandboxReady: true as const, created } };
+          }
+          case "reset_sandbox": {
+            const { created } = await SandboxService.resetSandbox(userId, assignmentId);
+            return { result: { sandboxReady: true as const, created } };
+          }
+          default:
+            return { error: { type: "UNKNOWN_JOB", message: `Unknown job type ${String(type)}`, statusCode: 400 } };
         }
-        const result = await GradingService.gradeSubmission(userId, assignmentId, query, jobId);
-        return { result };
       } catch (error) {
-        // Expected outcomes (bad SQL, sandbox not found, grading 4xxs) become
-        // a completed job carrying an error payload - not a pg-boss "failed"
-        // job, which is reserved for unexpected/infra failures worth
-        // retrying and alerting on.
         if (error instanceof ExecutionServiceError) {
           return {
             error: {
@@ -66,28 +69,52 @@ const run = async () => {
     },
   );
 
-  logger.info(`Worker started, listening on queue "${SANDBOX_QUEUE}"`);
+  await boss.work<MaintenanceJobPayload>(MAINTENANCE_QUEUE, { batchSize: 1 }, async ([job]) => {
+    const result = await MaintenanceService.run(job!.data.daysToKeep);
+    return result;
+  });
 
-  // Query-execution metrics (duration, timeout count) are recorded in this
-  // process, not the API process - exposed here so Prometheus scrapes the
-  // worker as its own target rather than losing that data.
-  const metricsPort = Number(process.env.WORKER_METRICS_PORT ?? 5001);
-  createServer(async (req, res) => {
+  logger.info(`Worker started, listening on queues "${SANDBOX_QUEUE}", "${MAINTENANCE_QUEUE}"`);
+
+  let shuttingDown = false;
+  const port = env.PORT ?? Number(process.env.WORKER_METRICS_PORT ?? 5001);
+  const server = createServer(async (req, res) => {
     if (req.url === "/metrics") {
       res.setHeader("Content-Type", registry.contentType);
       res.end(await registry.metrics());
       return;
     }
-    if (req.url === "/health") {
-      res.end(JSON.stringify({ ok: true }));
+    if (req.url === "/health" || req.url === "/livez") {
+      res.statusCode = shuttingDown ? 503 : 200;
+      res.end(JSON.stringify({ ok: !shuttingDown }));
       return;
     }
     res.statusCode = 404;
     res.end();
-  }).listen(metricsPort, () => {
-    logger.info(`Worker metrics server listening on ${metricsPort}`);
-  });
+  }).listen(port, () => logger.info(`Worker HTTP server listening on ${port}`));
+
+  const shutdown = async (signal: string) => {
+    if (shuttingDown) return;
+    shuttingDown = true;
+    logger.info({ signal }, "Worker shutting down");
+    const force = setTimeout(() => process.exit(1), 25_000);
+    force.unref();
+    try {
+      server.close();
+      await stopBoss(20_000);
+      await pool.end();
+      await closeSandboxAdminPool();
+      process.exit(0);
+    } catch (err) {
+      logger.error({ err }, "Error during worker shutdown");
+      process.exit(1);
+    }
+  };
+  process.on("SIGTERM", () => void shutdown("SIGTERM"));
+  process.on("SIGINT", () => void shutdown("SIGINT"));
 };
+
+process.on("unhandledRejection", (reason) => logger.error({ err: reason }, "Unhandled rejection in worker"));
 
 run().catch((error) => {
   logger.error({ err: error }, "Worker failed to start");

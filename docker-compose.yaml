@@ -1,45 +1,106 @@
 name: sql-learn
 
-# Full local stack: db + app (API server) + worker (job queue consumer),
-# matching prompt.md §27's target shape. This is *additive* to the simpler,
-# still-supported host-based dev flow in apps/api/README.md (`bun run dev` /
-# `bun run worker` against `docker/postgres/docker-compose.yaml`'s Postgres
-# alone) - use whichever fits: host-based for fast iteration (tsx watch
-# reload), this full-stack compose for a production-like local run.
-#
-# Migrations are NOT run automatically by this compose (no init container -
-# keeping this simple rather than building a migration-runner service for a
-# one-time setup step). Run them from the host against the exposed port
-# 5432, same as the host-based flow: `cd apps/api && bun run migrate up`.
-
-include:
-  - docker/postgres/docker-compose.yaml
+x-api-env: &api-env
+  NODE_ENV: production
+  PORT: "8080"
+  POSTGRES_URL: postgres://postgres:postgres@app-db:5432/sqlflow
+  DATABASE_URL: postgres://postgres:postgres@app-db:5432/sqlflow
+  BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:5000}
+  BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-local-dev-only-better-auth-secret-change-me-0123456789}
+  CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
+  COOKIE_DOMAIN: ${COOKIE_DOMAIN:-}
+  CLEANUP_TOKEN: ${CLEANUP_TOKEN:-local-dev-cleanup-token}
+  GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+  GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+  GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
+  GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
+  GOOGLE_GENERATIVE_AI_API_KEY: ${GOOGLE_GENERATIVE_AI_API_KEY:-}
+  METRICS_TOKEN: ${METRICS_TOKEN:-}
 
 services:
-  app:
+  app-db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: sqlflow
+    ports:
+      - "5432:5432"
+    volumes:
+      - sqlflow-app-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d sqlflow"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  sandbox-db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5433:5432"
+    command: ["postgres", "-c", "max_connections=200"]
+    volumes:
+      - sqlflow-sandbox-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  migrate:
+    profiles: ["tools"]
     build:
       context: .
       dockerfile: apps/api/Dockerfile
-    command: ["node_modules/.bin/tsx", "src/index.ts"]
-    env_file:
-      - apps/api/.env.docker
-    ports:
-      - "5000:5000"
+    entrypoint: []
+    command: ["node_modules/.bin/node-pg-migrate", "-d", "POSTGRES_URL", "up"]
+    environment:
+      POSTGRES_URL: postgres://postgres:postgres@app-db:5432/sqlflow
     depends_on:
-      db:
+      app-db:
+        condition: service_healthy
+
+  api:
+    image: sqlflow-api:local
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    environment: *api-env
+    ports:
+      - "5000:8080"
+    depends_on:
+      app-db:
         condition: service_healthy
     restart: unless-stopped
 
   worker:
+    image: sqlflow-worker:local
     build:
       context: .
-      dockerfile: apps/api/Dockerfile
-    command: ["node_modules/.bin/tsx", "src/worker.ts"]
-    env_file:
-      - apps/api/.env.docker
+      dockerfile: apps/api/Dockerfile.worker
+    environment:
+      NODE_ENV: production
+      PORT: "8080"
+      POSTGRES_URL: postgres://postgres:postgres@app-db:5432/sqlflow
+      DATABASE_URL: postgres://postgres:postgres@app-db:5432/sqlflow
+      SANDBOX_ADMIN_DATABASE_URL: postgres://postgres:postgres@sandbox-db:5432/postgres
+      SANDBOX_ROLE_SECRET: ${SANDBOX_ROLE_SECRET:-local-dev-sandbox-role-secret-change-me-0123456789}
+      WORKER_CONCURRENCY: ${WORKER_CONCURRENCY:-4}
     ports:
-      - "5001:5001"
+      - "5001:8080"
     depends_on:
-      db:
+      app-db:
+        condition: service_healthy
+      sandbox-db:
         condition: service_healthy
     restart: unless-stopped
+
+volumes:
+  sqlflow-app-data:
+  sqlflow-sandbox-data:

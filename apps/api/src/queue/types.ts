@@ -1,4 +1,6 @@
-export type SandboxJobType = "execute_query" | "evaluate_submission";
+import type { QueryResult, GradingResult, SandboxProvisionResult } from "@sql-learn/types";
+
+export type SandboxJobType = "execute_query" | "evaluate_submission" | "init_sandbox" | "reset_sandbox";
 
 export interface SandboxJobPayload {
   type: SandboxJobType;
@@ -15,5 +17,9 @@ export interface SandboxJobError {
 
 export interface SandboxJobOutput {
   error?: SandboxJobError;
-  result?: unknown;
+  result?: QueryResult | GradingResult | SandboxProvisionResult;
+}
+
+export interface MaintenanceJobPayload {
+  daysToKeep: number;
 }

@@ -9,8 +9,6 @@ export default [
     languageOptions: { globals: { ...globals.node } },
   },
   {
-    // node-pg-migrate migration files: plain CommonJS, not part of the TS
-    // project - linted with base JS rules only, not typescript-eslint.
     files: ["**/*.cjs"],
     languageOptions: {
       sourceType: "commonjs",

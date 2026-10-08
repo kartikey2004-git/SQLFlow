@@ -20,8 +20,6 @@ describe("Hints", () => {
   afterAll(cleanupTestData);
 
   it("returns a clean 'not configured' response when GOOGLE_GENERATIVE_AI_API_KEY is unset", async () => {
-    // Don't trust the ambient environment to have this unset - some dev
-    // machines have a real key exported globally for unrelated tools.
     const original = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
     delete process.env.GOOGLE_GENERATIVE_AI_API_KEY;
     try {

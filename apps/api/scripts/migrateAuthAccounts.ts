@@ -1,19 +1,3 @@
-/**
- * One-off backfill: creates the Better Auth `accounts` row every pre-migration
- * user needs to keep signing in with their existing Argon2id password hash.
- *
- * Better Auth stores email/password credentials as an `accounts` row (not on
- * `users` directly): providerId "credential", accountId equal to the user's
- * own id (as a string), issuer "local:credential", password holding the
- * hash - verified empirically against better-auth's sign-up handler
- * (linkAccount call in dist/api/routes/sign-up.mjs), not assumed from
- * documentation.
- *
- * Idempotent: skips users that already have a credential account, so it's
- * safe to re-run.
- *
- * Run with: bun run apps/api/scripts/migrateAuthAccounts.ts
- */
 import "dotenv/config";
 import { prisma } from "@sql-learn/database";
 

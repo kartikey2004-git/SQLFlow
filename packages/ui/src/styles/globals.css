@@ -1,12 +1,6 @@
 @import "tailwindcss";
 @import "@sql-learn/config-tailwind/theme.css";
 
-/*
- * Tailwind v4's automatic content detection doesn't reliably follow the
- * node_modules symlink apps/web resolves @sql-learn/ui through - without
- * this, none of packages/ui's component classes (bg-primary, rounded-md,
- * etc.) get generated even though the classNames are present in the DOM.
- */
 @source "../components/**/*.{ts,tsx}";
 
 :root {
@@ -21,7 +15,7 @@
   --popover: #ffffff;
   --popover-foreground: #171717;
 
-  --primary: #2563eb;
+  --primary: #059669;
   --primary-foreground: #ffffff;
 
   --secondary: #f5f5f5;
@@ -36,15 +30,12 @@
   --destructive: #dc2626;
   --destructive-foreground: #ffffff;
 
-  /* Not part of shadcn's default token set - added for the app's pass/fail
-     grading states and the "Submit" action, which read as green throughout
-     the original design (shadcn ships no green by default). */
   --success: #16a34a;
   --success-foreground: #ffffff;
 
   --border: #e5e5e5;
   --input: #e5e5e5;
-  --ring: #2563eb;
+  --ring: #10b981;
 }
 
 @theme inline {

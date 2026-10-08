@@ -1,32 +1,26 @@
-// ─────────────────────────────────────────────
-//  SqlFlow marketing-page data
-// ─────────────────────────────────────────────
 
-// ── Navigation ──────────────────────────────
 export const navigation = {
   logo: { text: "SqlFlow" },
   links: [
     { href: "#how-it-works", label: "How it works" },
     { href: "#features", label: "Features" },
     { href: "#use-cases", label: "Use cases" },
-    { href: "#roadmap", label: "Roadmap" },
   ],
   actions: [{ label: "Get started free" }],
 };
 
-// ── Hero ─────────────────────────────────────
 export const hero = {
-  eyebrow: { label: "Now in early access — free to use" },
+  eyebrow: { label: "Now in early access, free to use" },
   headline: {
     line1: "Master SQL by",
     highlight: "writing real queries",
     line3: "against live databases.",
   },
   description:
-    "SqlFlow drops you into a sandboxed Postgres database with graded challenges and instant feedback. No setup, no guessing — just SQL that runs and results that teach.",
+    "SqlFlow drops you into a sandboxed Postgres database with graded challenges and instant feedback. No setup, no guessing, just SQL that runs and results that teach.",
   primaryCta: { label: "Start practising free", icon: "arrow-right" },
   secondaryCta: { label: "See how it works", href: "#how-it-works" },
-  trustText: "No credit card · Runs in your browser · Real Postgres under the hood",
+  trustText: "Runs in your browser · Real Postgres under the hood",
 };
 
 export const heroStats = [
@@ -35,49 +29,46 @@ export const heroStats = [
   { value: "100 %", label: "browser-based" },
 ];
 
-// ── Problem ──────────────────────────────────
 export const problem = {
-  eyebrow: "The problem",
-  title: "SQL tutorials teach syntax. SqlFlow teaches thinking.",
+  eyebrow: "Where learners get stuck",
+  title: "Knowing SQL syntax isn't the same as using SQL.",
   description:
-    "Most SQL courses walk you through slide decks and quiz you on keywords. You pass the quiz but freeze the moment a real schema lands in front of you.",
+    "Most courses end with a multiple-choice quiz, but real databases don't come with answer options. SqlFlow gives you a live database to practise in, so you learn to work through a query yourself.",
   painPoints: [
     {
       icon: "code",
-      title: "Passive learning doesn't stick",
+      title: "Reading doesn't stick",
       description:
-        "Reading SELECT examples or watching videos feels productive. But without writing queries yourself, nothing is retained after 48 hours.",
+        "Watching examples feels productive, but you'll remember very little until you write the queries yourself. Practice is what turns a concept into a skill you can use.",
     },
     {
       icon: "database",
-      title: "Toy datasets, toy problems",
+      title: "Practice data is too simple",
       description:
-        "Most platforms give you three-row tables and single-table queries. Real databases have NULLs, duplicates, and a dozen joins.",
+        "Three-row tables and single-table queries don't prepare you for NULLs, duplicate rows, or multi-table joins. Real work looks more like a messy schema with a dozen tables.",
     },
     {
       icon: "alert-triangle",
-      title: "Cryptic error messages",
+      title: "Error messages leave you stuck",
       description:
-        "Postgres error messages are terse. Without context or a hint system, beginners spend 30 minutes on a missing alias.",
+        "Postgres errors are terse and often point at the wrong line. Without a hint, one missing alias or a misplaced GROUP BY can cost you half an hour.",
     },
     {
       icon: "activity",
-      title: "No feedback loop",
+      title: "You get a result, not a reason",
       description:
-        "Submit an answer and you get a ✓ or ✗. You never learn *why* your query returned the wrong rows, or how the correct one works.",
+        "Knowing an answer is wrong doesn't show you why your rows were off or how the correct query gets there. Clear, specific feedback is what closes that gap.",
     },
   ],
 };
 
-// ── Solution ─────────────────────────────────
 export const solution = {
   eyebrow: "The solution",
   title: "A graded sandbox that explains every result.",
   description:
-    "SqlFlow executes your query in an isolated Postgres schema, normalises both result sets, compares them row-by-row, and tells you exactly what differed — so every wrong answer is a learning moment.",
+    "SqlFlow executes your query in an isolated Postgres schema, normalises both result sets, compares them row-by-row, and tells you exactly what differed, so every wrong answer is a learning moment.",
 };
 
-// ── Supported stack (used in marquee) ────────
 export const supportedStack = {
   categories: [
     {
@@ -103,7 +94,6 @@ export const supportedStack = {
   ],
 };
 
-// ── Schema graph (repurposed ArchitectureGraph) ──
 export const architectureGraph = {
   id: "schema",
   capabilities: [
@@ -115,7 +105,7 @@ export const architectureGraph = {
     {
       title: "Impact analysis",
       description:
-        "When your result set differs, SqlFlow highlights which rows were missing, extra, or wrong — not just a pass/fail badge.",
+        "When your result set differs, SqlFlow highlights which rows were missing, extra, or wrong, not just a pass/fail badge.",
     },
     {
       title: "Compatibility validation",
@@ -151,12 +141,11 @@ export const architectureGraph = {
   },
 };
 
-// ── Query engine (repurposed compiler) ───────
 export const compiler = {
   eyebrow: "The grading engine",
   title: "Deterministic grading. Every time.",
   description:
-    "Your query runs in a sandboxed Postgres schema. Results are normalised — column names lower-cased, rows sorted by value — then compared against the expected output row-by-row. No flaky string matching.",
+    "Your query runs in a sandboxed Postgres schema. Results are normalised, column names lower-cased, rows sorted by value, then compared against the expected output row-by-row. No flaky string matching.",
   architectureDefinition: {
     language: "sql",
     code: `-- SqlFlow sandbox schema (excerpt)
@@ -192,7 +181,6 @@ CREATE TABLE attempts (
   ],
 };
 
-// ── Schema file tree (repurposed architectureArtifact) ──
 export const architectureArtifact = {
   tree: {
     label: "sqlflow-schema",
@@ -231,7 +219,6 @@ export const architectureArtifact = {
   },
 };
 
-// ── GitHub-style toolbar (repurposed for query submission flow) ──
 export const github = {
   flow: [
     { label: "Run query", icon: "rocket" },
@@ -252,7 +239,6 @@ export const github = {
   },
 };
 
-// ── Grading engine layers (repurposed deterministicEngine) ──
 export const deterministicEngine = {
   layers: [
     {
@@ -279,11 +265,10 @@ export const deterministicEngine = {
   ],
 };
 
-// ── Validation pipeline (repurposed) ─────────
 export const validation = {
   title: "Query validation pipeline",
   description:
-    "Before your score lands, your query passes through four gates — keeping false positives and false negatives at zero.",
+    "Before your score lands, your query passes through four gates, keeping false positives and false negatives at zero.",
   pipeline: [
     { step: "Syntax check" },
     { step: "Schema resolve" },
@@ -293,12 +278,11 @@ export const validation = {
     { step: "Score emit" },
   ],
   failureLoop: {
-    title: "On mismatch — auto explain",
+    title: "On mismatch, auto explain",
     steps: ["Diff rows", "Identify gap", "Generate hint", "Surface in UI"],
   },
 };
 
-// ── Architecture change example (repurposed as query migration) ──
 export const architectureChange = {
   example: {
     from: { technology: "SQLite mock" },
@@ -307,10 +291,9 @@ export const architectureChange = {
   },
 };
 
-// ── Comparison table ──────────────────────────
 export const comparison = {
   eyebrow: "Why SqlFlow",
-  title: "More than a quiz — a real practice environment.",
+  title: "More than a quiz, a real practice environment.",
   description:
     "Other platforms test recall. SqlFlow builds muscle memory by running your actual SQL against a live database and explaining every diff.",
   columns: [
@@ -358,10 +341,9 @@ export const comparison = {
   ],
 };
 
-// ── Decision engine (repurposed as adaptive difficulty) ──
 export const decisionEngine = {
   eyebrow: "Adaptive grading",
-  title: "The engine decides what counts as correct — not a regex.",
+  title: "The engine decides what counts as correct, not a regex.",
   decisions: [
     {
       capability: "Column order",
@@ -390,13 +372,12 @@ export const decisionEngine = {
   ],
 };
 
-// ── Developer experience (repurposed as learning principles) ──
 export const developerExperience = {
   id: "features",
   eyebrow: "Built to teach",
   title: "Every design decision serves one goal: faster learning.",
   description:
-    "SqlFlow is built on the premise that you learn SQL by writing SQL — not by watching someone else write it. Every feature is optimised for the feedback loop.",
+    "SqlFlow is built on the premise that you learn SQL by writing SQL, not by watching someone else write it. Every feature is optimised for the feedback loop.",
   principles: [
     {
       title: "Instant execution",
@@ -406,7 +387,7 @@ export const developerExperience = {
     {
       title: "Explain the diff, not just the answer",
       description:
-        "When you're wrong, we show you which rows were missing or extra — not just \"incorrect\". Understanding the gap is the lesson.",
+        "When you're wrong, we show you which rows were missing or extra, not just \"incorrect\". Understanding the gap is the lesson.",
     },
     {
       title: "Real schemas, not toy data",
@@ -426,7 +407,6 @@ export const developerExperience = {
   ],
 };
 
-// ── Use cases ─────────────────────────────────
 export const useCases = {
   id: "use-cases",
   eyebrow: "Who it's for",
@@ -436,7 +416,7 @@ export const useCases = {
       icon: "users",
       title: "CS students",
       description:
-        "Reinforce what your database course teaches by running the queries yourself against a live schema — not pasting them into a slideshow.",
+        "Reinforce what your database course teaches by running the queries yourself against a live schema, not pasting them into a slideshow.",
     },
     {
       icon: "code-2",
@@ -471,7 +451,6 @@ export const useCases = {
   ],
 };
 
-// ── Roadmap ───────────────────────────────────
 export const roadmap = {
   eyebrow: "Roadmap",
   title: "What's built, what's next.",
@@ -526,7 +505,6 @@ export const roadmap = {
   ],
 };
 
-// ── Waitlist / final CTA ──────────────────────
 export const waitlist = {
   id: "waitlist",
   eyebrow: "Get early access",
@@ -541,7 +519,6 @@ export const finalCta = {
   description: "Join developers and students already practising on SqlFlow.",
 };
 
-// ── Product demo section ──────────────────────
 export const product = {
   id: "how-it-works",
   eyebrow: "How it works",
@@ -604,10 +581,10 @@ ascending.`,
       fixes: [
         { title: "Missing NULL row for inactive users", technology: "NULL handling" },
         { title: "Extra row: duplicate on LEFT JOIN", technology: "JOIN logic" },
-        { title: "Wrong count — GROUP BY too broad", technology: "Aggregates" },
+        { title: "Wrong count, GROUP BY too broad", technology: "Aggregates" },
         { title: "Off-by-one in LIMIT offset", technology: "Pagination" },
         { title: "Case-sensitive email comparison", technology: "String ops" },
-        { title: "Missing ORDER BY — row order undefined", technology: "Sorting" },
+        { title: "Missing ORDER BY, row order undefined", technology: "Sorting" },
       ],
     },
     {
@@ -638,7 +615,6 @@ ascending.`,
   ],
 };
 
-// ── Footer ────────────────────────────────────
 export const footer = {
   brand: {
     name: "SqlFlow",
@@ -651,7 +627,6 @@ export const footer = {
       links: [
         { label: "Challenges", href: "/assignments" },
         { label: "How it works", href: "#how-it-works" },
-        { label: "Roadmap", href: "#roadmap" },
         { label: "Get started", href: "#waitlist" },
       ],
     },
@@ -659,7 +634,6 @@ export const footer = {
       title: "Learn",
       links: [
         { label: "SELECT basics", href: "/assignments" },
-        { label: "JOINs", href: "/assignments" },
         { label: "Aggregates", href: "/assignments" },
         { label: "Window functions", href: "/assignments" },
       ],

@@ -11,3 +11,13 @@
 .claude
 .agents
 research
+deploy
+loadtest
+docs
+docker
+prompt.md
+README.md
+apps/web
+!apps/web/package.json
+**/.git
+**/*.tsbuildinfo

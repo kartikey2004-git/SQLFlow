@@ -1,6 +1,6 @@
-import type { QueryResult, GradingResult, JobStatus } from "@sql-learn/types";
+import type { QueryResult, GradingResult, JobStatus, SandboxProvisionResult } from "@sql-learn/types";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+import { API_URL } from "@/lib/config";
 
 interface ApiEnvelope<T> {
   success: boolean;
@@ -21,18 +21,9 @@ const request = async <T>(path: string, init?: RequestInit): Promise<T> => {
   return result.data;
 };
 
-export const initSandbox = (assignmentId: number): Promise<{ schemaName: string; isNew: boolean }> =>
-  request("/sandbox/init", { method: "POST", body: JSON.stringify({ assignmentId }) });
-
 const submitJob = (path: string, assignmentId: number, query: string): Promise<{ jobId: string }> =>
   request(path, { method: "POST", body: JSON.stringify({ assignmentId, query }) });
 
-/**
- * Subscribes to a queued job's status via SSE (GET /sandbox/jobs/:id/stream),
- * resolving once it reaches a terminal state. Falls back to polling
- * GET /sandbox/jobs/:id if EventSource isn't available (e.g. very old
- * browsers) or the stream errors out before a terminal state is reached.
- */
 const waitForJob = (jobId: string, onStatus?: (status: JobStatus) => void): Promise<JobStatus> => {
   const terminal = new Set(["completed", "cancelled", "failed"]);
 
@@ -60,9 +51,6 @@ const waitForJob = (jobId: string, onStatus?: (status: JobStatus) => void): Prom
     });
 
     source.addEventListener("error", () => {
-      // The stream itself failed (network blip, proxy buffering, etc.) -
-      // the job may still be running server-side, so fall back to polling
-      // rather than surfacing a spurious failure.
       finish(() => pollForJob(jobId, onStatus).then(resolve, reject));
     });
   });
@@ -70,7 +58,7 @@ const waitForJob = (jobId: string, onStatus?: (status: JobStatus) => void): Prom
 
 const pollForJob = async (jobId: string, onStatus?: (status: JobStatus) => void): Promise<JobStatus> => {
   const terminal = new Set(["completed", "cancelled", "failed"]);
-  for (let i = 0; i < 40; i++) {
+  for (let i = 0; i < 120; i++) {
     const status = await request<JobStatus>(`/sandbox/jobs/${jobId}`);
     onStatus?.(status);
     if (terminal.has(status.state)) return status;
@@ -88,6 +76,29 @@ const jobResult = <T>(status: JobStatus): T => {
   }
   return status.output?.result as T;
 };
+
+const provision = async (
+  path: string,
+  assignmentId: number,
+  onStatus?: (status: JobStatus) => void,
+): Promise<SandboxProvisionResult> => {
+  const { jobId } = await request<{ jobId: string }>(path, {
+    method: "POST",
+    body: JSON.stringify({ assignmentId }),
+  });
+  const status = await waitForJob(jobId, onStatus);
+  return jobResult<SandboxProvisionResult>(status);
+};
+
+export const initSandbox = (
+  assignmentId: number,
+  onStatus?: (status: JobStatus) => void,
+): Promise<SandboxProvisionResult> => provision("/sandbox/init", assignmentId, onStatus);
+
+export const resetSandbox = (
+  assignmentId: number,
+  onStatus?: (status: JobStatus) => void,
+): Promise<SandboxProvisionResult> => provision("/sandbox/reset", assignmentId, onStatus);
 
 export const executeQuery = async (
   assignmentId: number,
@@ -109,4 +120,4 @@ export const gradeSubmission = async (
   return jobResult<GradingResult>(status);
 };
 
-export type { QueryResult, GradingResult, JobStatus };
+export type { QueryResult, GradingResult, JobStatus, SandboxProvisionResult };

@@ -84,7 +84,7 @@ export function RoadmapSection() {
 
 export function FinalCtaSection() {
   return (
-    <Section id={waitlist.id} className="border-t border-border" density="feature">
+    <Section id={waitlist.id} density="feature">
       <DotBackdrop className="-z-10 opacity-60" />
       <div
         aria-hidden="true"
@@ -105,7 +105,6 @@ export function FinalCtaSection() {
           <Button asChild size="lg" className="rounded-none bg-primary px-8 text-white hover:bg-primary/90">
             <a href={WAITLIST_FORM_URL} target="_blank" rel="noopener noreferrer">
               {waitlist.submitLabel}
-              <Icon name="arrow-right" className="size-4" />
             </a>
           </Button>
 

@@ -1,15 +1,3 @@
-/**
- * Layered leak-detection for AI-generated hints, run before a hint is ever
- * shown to a student:
- *   1. A cheap regex check for a full SELECT...FROM shaped fragment.
- *   2. n-gram overlap against the assignment's reference solution.
- *   3. Levenshtein similarity as a secondary check (catches near-verbatim
- *      short solutions that n-gram overlap alone might miss).
- * A third LLM-as-judge layer (from research/ai-hints.md) is intentionally
- * not implemented here - it needs a second model call plus an eval harness
- * to validate false-positive/negative rates, which is out of scope for this
- * pass. This is the extension point for it.
- */
 
 const SQL_SHAPE_RE = /\bselect\b[\s\S]{0,200}?\bfrom\b/i;
 const NGRAM_SIZE = 4;

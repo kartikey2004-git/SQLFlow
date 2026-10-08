@@ -15,7 +15,6 @@ declare global {
 const getBetterAuthSession = (req: Request) =>
   auth.api.getSession({ headers: fromNodeHeaders(req.headers) });
 
-/** Populates req.user when a valid session cookie is present; otherwise 401s. */
 export const requireAuth = asyncHandler(async (req: Request, _res: Response, next: NextFunction) => {
   const result = await getBetterAuthSession(req);
   if (!result) {
@@ -30,7 +29,6 @@ export const requireAuth = asyncHandler(async (req: Request, _res: Response, nex
   next();
 });
 
-/** Best-effort auth: populates req.user if a valid cookie is present, never rejects. */
 export const optionalAuth = asyncHandler(async (req: Request, _res: Response, next: NextFunction) => {
   const result = await getBetterAuthSession(req);
   if (result) {

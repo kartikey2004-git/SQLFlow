@@ -31,7 +31,7 @@ export function EngineWorkbench() {
       />
 
       <div className="relative z-20 flex justify-center px-4 pt-6 lg:px-6 lg:pt-8">
-        <div className="flex flex-wrap items-center gap-0.5 border border-border bg-background/90 p-1.5 shadow-[0_8px_30px_-12px_rgba(0,0,0,0.6)] backdrop-blur-md">
+        <div className="flex flex-wrap items-center gap-0.5 border border-border bg-background/90 p-1.5 shadow-[0_8px_30px_-12px_rgba(0,0,0,0.6)]">
           {github.flow.map((step) => (
             <button
               key={step.label}
