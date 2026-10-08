@@ -17,16 +17,16 @@ export const hero = {
     line3: "against live databases.",
   },
   description:
-    "SqlFlow drops you into a sandboxed Postgres database with graded challenges and instant feedback. No setup, no guessing, just SQL that runs and results that teach.",
+    "SqlFlow gives you your own PostgreSQL 17 database for every challenge, with graded feedback and no setup. Write the query, run it, and learn from the result.",
   primaryCta: { label: "Start practising free", icon: "arrow-right" },
   secondaryCta: { label: "See how it works", href: "#how-it-works" },
-  trustText: "Runs in your browser · Real Postgres under the hood",
+  trustText: "Runs in your browser · Real PostgreSQL 17 under the hood",
 };
 
 export const heroStats = [
-  { value: "24+", label: "graded challenges" },
-  { value: "< 2 s", label: "query feedback" },
-  { value: "100 %", label: "browser-based" },
+  { value: "16", label: "graded challenges" },
+  { value: "Your own", label: "database per challenge" },
+  { value: "PG 17", label: "real PostgreSQL" },
 ];
 
 export const problem = {
@@ -66,29 +66,22 @@ export const solution = {
   eyebrow: "The solution",
   title: "A graded sandbox that explains every result.",
   description:
-    "SqlFlow executes your query in an isolated Postgres schema, normalises both result sets, compares them row-by-row, and tells you exactly what differed, so every wrong answer is a learning moment.",
+    "SqlFlow runs your statements against your own PostgreSQL database, normalises both results, and tells you which check failed, so every wrong answer is a learning moment.",
 };
 
 export const supportedStack = {
   categories: [
     {
       technologies: [
-        { name: "SELECT" },
-        { name: "JOIN" },
+        { name: "SELECT & WHERE" },
+        { name: "COUNT & aggregates" },
         { name: "GROUP BY" },
-        { name: "Subqueries" },
-        { name: "Window Functions" },
-        { name: "CTEs" },
-        { name: "Aggregates" },
-        { name: "NULL handling" },
-        { name: "CASE WHEN" },
-        { name: "DISTINCT" },
-        { name: "ORDER BY" },
-        { name: "HAVING" },
-        { name: "UNION" },
-        { name: "EXISTS" },
-        { name: "Indexes" },
+        { name: "NULL checks" },
+        { name: "Duplicate detection" },
+        { name: "INSERT / UPDATE / DELETE" },
+        { name: "CREATE / ALTER / DROP" },
         { name: "Transactions" },
+        { name: "Multi-statement scripts" },
       ],
     },
   ],
@@ -98,24 +91,24 @@ export const architectureGraph = {
   id: "schema",
   capabilities: [
     {
-      title: "Dependency awareness",
+      title: "Your own database",
       description:
-        "Every challenge comes with a pre-seeded schema. SqlFlow knows which tables, columns, and relationships your query must touch.",
+        "Every student gets a PostgreSQL database of their own, seeded with the challenge's tables. Other students' data is not reachable from it.",
     },
     {
-      title: "Impact analysis",
+      title: "Real SQL, not a simulator",
       description:
-        "When your result set differs, SqlFlow highlights which rows were missing, extra, or wrong, not just a pass/fail badge.",
+        "Run any statement your database allows, including CREATE, INSERT, UPDATE, DELETE, and transactions. Scripts run in order and stop at the first error.",
     },
     {
-      title: "Compatibility validation",
+      title: "Sample data on the page",
       description:
-        "Queries run in a locked-down schema so no DDL accidents. Your SELECT, INSERT, UPDATE practice never leaks to other students.",
+        "Each challenge lists its tables with sample rows, so you can check column names and values before you write a query.",
     },
     {
-      title: "Architecture visualization",
+      title: "The platform's own data model",
       description:
-        "Every challenge surfaces the live schema graph so you can trace foreign keys and understand the data model before you write a line.",
+        "The graph below is the platform's data model: users, assignments, attempts, submissions, and their results.",
     },
   ],
   example: {
@@ -145,74 +138,57 @@ export const compiler = {
   eyebrow: "The grading engine",
   title: "Deterministic grading. Every time.",
   description:
-    "Your query runs in a sandboxed Postgres schema. Results are normalised, column names lower-cased, rows sorted by value, then compared against the expected output row-by-row. No flaky string matching.",
+    "Your script runs in your own database. Column names are lower-cased, rows are sorted by value, numeric strings are compared as numbers, and NULLs stay NULL. The result is then compared to the expected output. No flaky string matching.",
   architectureDefinition: {
     language: "sql",
-    code: `-- SqlFlow sandbox schema (excerpt)
+    code: `-- Challenge table (excerpt, from the seed data)
 CREATE TABLE users (
-  id          SERIAL PRIMARY KEY,
-  email       TEXT UNIQUE NOT NULL,
-  display_name TEXT,
-  role        TEXT DEFAULT 'student',
-  created_at  TIMESTAMPTZ DEFAULT NOW()
+  id            INTEGER,
+  email         TEXT,
+  display_name  TEXT,
+  role          TEXT,
+  email_verified BOOLEAN,
+  image         TEXT
 );
 
-CREATE TABLE assignments (
-  id          SERIAL PRIMARY KEY,
-  title       TEXT NOT NULL,
-  difficulty  TEXT NOT NULL,
-  question    TEXT NOT NULL
-);
-
-CREATE TABLE attempts (
-  id            SERIAL PRIMARY KEY,
-  user_id       INT REFERENCES users(id),
-  assignment_id INT REFERENCES assignments(id),
-  status        TEXT DEFAULT 'pending',
-  submitted_at  TIMESTAMPTZ
-);`,
+-- Example row
+-- (1, 'alice@gmail.com', 'Alice Johnson', 'student', true, 'https://...')`,
   },
   pipeline: [
-    { step: "01", icon: "code", label: "Parse SQL" },
-    { step: "02", icon: "database", label: "Execute in sandbox" },
+    { step: "01", icon: "code", label: "Parse statements" },
+    { step: "02", icon: "database", label: "Run in your database" },
     { step: "03", icon: "shuffle", label: "Normalise result" },
-    { step: "04", icon: "scan", label: "Compare rows" },
+    { step: "04", icon: "scan", label: "Compare to expected" },
     { step: "05", icon: "check-circle", label: "Score & explain" },
   ],
 };
 
 export const architectureArtifact = {
   tree: {
-    label: "sqlflow-schema",
+    label: "apps/api",
     children: [
       {
-        label: "tables",
+        label: "services/sandbox",
         children: [
-          "users.sql",
-          "sessions.sql",
-          "assignments.sql",
-          "test_cases.sql",
-          "attempts.sql",
-          "submissions.sql",
-          "eval_results.sql",
-          "hint_requests.sql",
+          "sandboxDb.ts",
+          "scriptRunner.ts",
+          "execution.service.ts",
+          "maintenance.service.ts",
         ],
       },
       {
-        label: "seed",
+        label: "services/grading",
         children: [
-          "users.seed.ts",
-          "assignments.seed.ts",
-          "sandbox.seed.ts",
-        ],
-      },
-      {
-        label: "services",
-        children: [
-          "sandbox.service.ts",
           "grading.service.ts",
           "normalizer.service.ts",
           "comparator.service.ts",
+        ],
+      },
+      {
+        label: "data",
+        children: [
+          "assignments.json",
+          "seedAssignments.ts",
         ],
       },
     ],
@@ -222,18 +198,18 @@ export const architectureArtifact = {
 export const github = {
   flow: [
     { label: "Run query", icon: "rocket" },
+    { label: "Submit for grading", icon: "shield-check" },
     { label: "Request hint", icon: "sparkles" },
     { label: "View schema", icon: "database" },
-    { label: "Reset editor", icon: "rotate-ccw" },
-    { label: "View history", icon: "clock" },
+    { label: "Reset sandbox", icon: "rotate-ccw" },
   ],
   pullRequest: {
     files: [
       { name: "normalizer.service.ts" },
       { name: "comparator.service.ts" },
-      { name: "sandbox.service.ts" },
-      { name: "grading.controller.ts" },
-      { name: "assignments.seed.ts" },
+      { name: "sandboxDb.ts" },
+      { name: "grading.service.ts" },
+      { name: "seedAssignments.ts" },
       { name: "schema.prisma" },
     ],
   },
@@ -245,22 +221,22 @@ export const deterministicEngine = {
       title: "Intelligence",
       number: "Layer 01",
       description:
-        "Parses your SQL, validates syntax, and resolves table references against the live sandbox schema before execution.",
-      components: ["pg-parser", "schema resolver", "alias tracker", "type checker"],
+        "Splits your script into statements with the PostgreSQL parser, then runs them one at a time and stops at the first error.",
+      components: ["pgsql-parser", "statement splitter", "error stop", "per-statement results"],
     },
     {
       title: "Architecture Engine",
       number: "Layer 02",
       description:
-        "Executes your query in an isolated Postgres schema spun up per student, ensuring no cross-contamination between sessions.",
-      components: ["pg-boss queue", "Neon sandbox", "row limiter", "timeout guard"],
+        "Runs your script in your own database as a limited role, with a time watchdog and a size check before each run.",
+      components: ["pg-boss queue", "per-student database", "role limits", "timeout watchdog"],
     },
     {
       title: "Executors",
       number: "Layer 03",
       description:
-        "Normalises column names and row order, then compares each row against the expected output with type-coercion awareness.",
-      components: ["normalizer", "comparator", "diff reporter", "score calculator"],
+        "Lower-cases column names and sorts rows, then compares the result with the expected output and reports the first check that fails.",
+      components: ["normalizer", "comparator", "failure reasons", "score calculator"],
     },
   ],
 };
@@ -268,26 +244,25 @@ export const deterministicEngine = {
 export const validation = {
   title: "Query validation pipeline",
   description:
-    "Before your score lands, your query passes through four gates, keeping false positives and false negatives at zero.",
+    "Your script passes through five stages. Each stage reports its own result, so a failure always points to a specific step.",
   pipeline: [
-    { step: "Syntax check" },
-    { step: "Schema resolve" },
-    { step: "Sandbox execute" },
-    { step: "Result normalise" },
-    { step: "Row compare" },
+    { step: "Parse statements" },
+    { step: "Run in your database" },
+    { step: "Normalise result" },
+    { step: "Compare to expected" },
     { step: "Score emit" },
   ],
   failureLoop: {
-    title: "On mismatch, auto explain",
-    steps: ["Diff rows", "Identify gap", "Generate hint", "Surface in UI"],
+    title: "On a failed check, explain why",
+    steps: ["Compare row count", "Compare column names", "Compare row values", "Show the reason"],
   },
 };
 
 export const architectureChange = {
   example: {
-    from: { technology: "SQLite mock" },
-    to: { technology: "Neon Postgres" },
-    impact: { affectedModules: 8 },
+    from: { technology: "Shared sandbox schema" },
+    to: { technology: "Database per student" },
+    impact: { affectedModules: 7 },
   },
 };
 
@@ -295,7 +270,7 @@ export const comparison = {
   eyebrow: "Why SqlFlow",
   title: "More than a quiz, a real practice environment.",
   description:
-    "Other platforms test recall. SqlFlow builds muscle memory by running your actual SQL against a live database and explaining every diff.",
+    "Other platforms test recall. SqlFlow builds muscle memory by running your actual SQL against a real PostgreSQL database and explaining what failed.",
   columns: [
     { name: "SqlFlow", icon: "database", highlighted: true },
     { name: "W3Schools", icon: "code" },
@@ -304,12 +279,12 @@ export const comparison = {
   ],
   rows: [
     {
-      label: "Live Postgres sandbox",
+      label: "Live PostgreSQL database",
       archonStatus: "shipped" as const,
       values: [true, false, false, false] as (boolean | "partial")[],
     },
     {
-      label: "Row-level diff feedback",
+      label: "Specific failure reasons",
       archonStatus: "shipped" as const,
       values: [true, false, false, false] as (boolean | "partial")[],
     },
@@ -319,7 +294,7 @@ export const comparison = {
       values: [true, false, true, true] as (boolean | "partial")[],
     },
     {
-      label: "Schema visualisation",
+      label: "Sample data on each challenge",
       archonStatus: "shipped" as const,
       values: [true, false, false, "partial"] as (boolean | "partial")[],
     },
@@ -349,13 +324,13 @@ export const decisionEngine = {
       capability: "Column order",
       decision: "Ignored",
       reason:
-        "Column order in a SELECT is irrelevant to correctness; we normalise before comparing.",
+        "The order of columns in your result doesn't matter. Column names are sorted before they are compared.",
     },
     {
       capability: "Row order",
       decision: "Normalised",
       reason:
-        "Without an ORDER BY, Postgres can return rows in any order. We sort both sides by value before diff.",
+        "Without an ORDER BY, Postgres can return rows in any order. Rows are sorted by value before comparing, so a correct answer isn't failed for its order.",
     },
     {
       capability: "Numeric strings",
@@ -380,29 +355,29 @@ export const developerExperience = {
     "SqlFlow is built on the premise that you learn SQL by writing SQL, not by watching someone else write it. Every feature is optimised for the feedback loop.",
   principles: [
     {
-      title: "Instant execution",
+      title: "Fast feedback",
       description:
-        "Hit Run and see your results in under two seconds. The tight loop between writing and seeing is the core of skill-building.",
+        "Hit Run and see your results as soon as the query finishes. The tight loop between writing and seeing is the core of skill-building.",
     },
     {
-      title: "Explain the diff, not just the answer",
+      title: "Explain the failure, not just the answer",
       description:
-        "When you're wrong, we show you which rows were missing or extra, not just \"incorrect\". Understanding the gap is the lesson.",
+        "When you're wrong, we show which check failed and, for visible checks, the first row that differs. Understanding the gap is the lesson.",
     },
     {
-      title: "Real schemas, not toy data",
+      title: "Realistic data",
       description:
-        "Our challenges use realistic schemas with foreign keys, NULLs, and multiple related tables. What you practice is what you'll face.",
+        "Challenges share a users table with NULLs, duplicate emails, and mixed roles. What you practise is the kind of data you'll see at work.",
     },
     {
-      title: "Difficulty that scales",
+      title: "Difficulty that builds",
       description:
-        "Challenges are tagged easy, medium, or hard. Start with simple filters and work up to multi-table aggregations with window functions.",
+        "Challenges are tagged Easy, Medium, or Hard. Start with filters and counts, then move on to grouping and duplicate detection.",
     },
     {
       title: "No setup friction",
       description:
-        "Sign up and start your first challenge in under 60 seconds. No local Postgres, no Docker, no config files.",
+        "Sign up and start your first challenge. No local Postgres, no Docker, no config files.",
     },
   ],
 };
@@ -416,37 +391,37 @@ export const useCases = {
       icon: "users",
       title: "CS students",
       description:
-        "Reinforce what your database course teaches by running the queries yourself against a live schema, not pasting them into a slideshow.",
+        "Reinforce what your database course teaches by running the queries yourself against a real PostgreSQL database, not pasting them into a slideshow.",
     },
     {
       icon: "code-2",
       title: "Backend developers",
       description:
-        "Brush up on window functions, CTEs, and complex JOINs without spinning up a local database or hunting for sample data.",
+        "Practise DDL, DML, and transactions in a scratch database, without setting up a local Postgres or hunting for sample data.",
     },
     {
       icon: "table-2",
       title: "Data analysts",
       description:
-        "Practice the SQL patterns that appear in analytics: GROUP BY with HAVING, running totals, cohort queries, and more.",
+        "Practise counting, filtering, and grouping on a realistic users dataset. More analytics challenges are on the roadmap.",
     },
     {
       icon: "search",
       title: "Interview prep",
       description:
-        "SQL interviews ask you to write correct, efficient queries under pressure. Practice on challenges ranked by the topics that come up most.",
+        "Practise the query patterns that come up in interviews: filtering, counting, grouping, and duplicate detection.",
     },
     {
       icon: "rocket",
       title: "Career switchers",
       description:
-        "Transitioning into data engineering or backend work? SqlFlow gives you a structured path from basic SELECTs to production-grade queries.",
+        "Working toward a data or backend role? Start with filters and counts, then work up through grouping and duplicate detection.",
     },
     {
       icon: "shield-check",
       title: "Team onboarding",
       description:
-        "Bring new engineers up to speed on your data model fast. Assign specific challenges that mirror your real schema.",
+        "Let new engineers practise SQL on sample data today. Custom schemas for teams are on the roadmap.",
     },
   ],
 };
@@ -462,9 +437,9 @@ export const roadmap = {
       status: "current" as const,
       title: "Live sandbox",
       features: [
-        "24+ graded challenges",
-        "Isolated Postgres sandbox",
-        "Row-level diff feedback",
+        "16 graded challenges",
+        "Your own PostgreSQL database per challenge",
+        "Specific failure reasons",
         "Easy / Medium / Hard tiers",
         "Auth & session management",
       ],
@@ -524,26 +499,24 @@ export const product = {
   eyebrow: "How it works",
   title: "From prompt to passing query in four steps.",
   description:
-    "SqlFlow walks you through each challenge with a live editor, schema reference, and instant graded feedback.",
+    "SqlFlow walks you through each challenge with a live editor, its sample tables, and graded feedback.",
   features: [
     {
       id: "write",
       number: "01",
       icon: "code",
       status: "shipped" as const,
-      title: "Read the challenge, inspect the schema",
+      title: "Read the challenge, inspect the sample tables",
       description:
-        "Every challenge shows the question, a description of the expected output, and the full live schema so you know exactly what tables and columns you're working with.",
+        "Every challenge shows the question, the columns the answer must return, and its sample tables with rows, so you know exactly what you're working with.",
       input: {
         label: "Challenge prompt",
-        content: `Write a query that returns the email
-and display_name of every user whose
-role is 'student', ordered by email
-ascending.`,
+        content:
+          "The platform has three roles: student, instructor, and admin. Write a query to find all users with the 'admin' role. Return only their id, email, and display_name.",
       },
       output: {
         label: "Expected columns",
-        items: ["email", "display_name"],
+        items: ["id", "email", "display_name"],
       },
     },
     {
@@ -551,23 +524,19 @@ ascending.`,
       number: "02",
       icon: "scan",
       status: "shipped" as const,
-      title: "Submit and get an instant skill score",
+      title: "Submit and see which checks passed",
       description:
-        "After each submission your score updates across every SQL topic we track. See exactly which areas are strong and where to focus next.",
+        "After each submission, every check is listed as passed or failed, with a weighted score. This is a sample run: the row count and columns match, but one row's values differ.",
       score: {
         categories: [
-          { name: "SELECT & filtering", score: 91 },
-          { name: "JOINs", score: 74 },
-          { name: "Aggregates", score: 68 },
-          { name: "Subqueries", score: 45 },
-          { name: "Window functions", score: 30 },
-          { name: "NULL handling", score: 82 },
+          { name: "Row count", score: 100 },
+          { name: "Column names", score: 100 },
+          { name: "Row values", score: 0 },
         ],
       },
       findings: [
-        { severity: "warning", title: "Subquery rewrite missed LATERAL JOIN opportunity" },
-        { severity: "warning", title: "GROUP BY without HAVING loses edge-case rows" },
-        { severity: "critical", title: "Window frame default may cause off-by-one in running total" },
+        { severity: "critical", title: "Row 2 values do not match expected output" },
+        { severity: "warning", title: "Hidden checks show pass or fail only, with no reason" },
       ],
     },
     {
@@ -575,16 +544,14 @@ ascending.`,
       number: "03",
       icon: "shield-check",
       status: "shipped" as const,
-      title: "See exactly which rows differed",
+      title: "See which check failed and why",
       description:
-        "When your result doesn't match, SqlFlow diffs both result sets and surfaces the specific rows that were missing, extra, or had wrong values.",
+        "When a check fails, SqlFlow says which one: row count, column names, or the first row whose values differ. Hidden checks report pass or fail only, so the answer can't be reverse-engineered.",
       fixes: [
-        { title: "Missing NULL row for inactive users", technology: "NULL handling" },
-        { title: "Extra row: duplicate on LEFT JOIN", technology: "JOIN logic" },
-        { title: "Wrong count, GROUP BY too broad", technology: "Aggregates" },
-        { title: "Off-by-one in LIMIT offset", technology: "Pagination" },
-        { title: "Case-sensitive email comparison", technology: "String ops" },
-        { title: "Missing ORDER BY, row order undefined", technology: "Sorting" },
+        { title: "Expected 3 rows but got 4", technology: "Row count" },
+        { title: "Column mismatch: expected 'display_name' but got 'name'", technology: "Column names" },
+        { title: "Row 2 values do not match expected output", technology: "Row values" },
+        { title: "Expected exactly 1 row but got 2", technology: "Single-row answers" },
       ],
     },
     {
@@ -592,23 +559,23 @@ ascending.`,
       number: "04",
       icon: "layers",
       status: "shipped" as const,
-      title: "Follow the structured learning path",
+      title: "Practise from easy to hard",
       description:
-        "Challenges are organised from single-table SELECTs all the way up to multi-step analytical queries. Complete each tier before the next unlocks.",
-      before: ["Single-table SELECT", "Basic WHERE", "ORDER BY"],
-      request: "→ advanced aggregations",
+        "Challenges are tagged Easy, Medium, or Hard. Today there are 16 challenges, mostly on one users table. More topics are on the roadmap.",
+      before: ["Filter with WHERE", "COUNT rows", "Read one table"],
+      request: "→ GROUP BY and duplicates",
       migration: [
         {
           phase: "Easy",
-          steps: ["Simple SELECT", "Filtering rows", "Sorting results", "DISTINCT values"],
+          steps: ["Select all user info", "Filter by role or flag", "Count unverified users", "Find users without an image"],
         },
         {
           phase: "Medium",
-          steps: ["Multi-table JOINs", "GROUP BY + HAVING", "Subqueries", "NULL handling"],
+          steps: ["Count users by role", "Find duplicate emails", "Find corporate email users", "Find the highest ID"],
         },
         {
           phase: "Hard",
-          steps: ["Window functions", "Recursive CTEs", "Complex analytics", "Query optimisation"],
+          steps: ["Count verified users per role", "More advanced topics on the roadmap"],
         },
       ],
     },
@@ -619,7 +586,7 @@ export const footer = {
   brand: {
     name: "SqlFlow",
     description:
-      "A hands-on SQL practice platform with a live Postgres sandbox, graded challenges, and row-level diff feedback.",
+      "A hands-on SQL practice platform with your own PostgreSQL database per challenge, graded results, and clear failure reasons.",
   },
   columns: [
     {
@@ -635,12 +602,12 @@ export const footer = {
       links: [
         { label: "SELECT basics", href: "/assignments" },
         { label: "Aggregates", href: "/assignments" },
-        { label: "Window functions", href: "/assignments" },
+        { label: "GROUP BY", href: "/assignments" },
       ],
     },
   ],
   bottom: {
-    copyright: `© ${new Date().getFullYear()} SqlFlow. Built with Next.js and Neon Postgres.`,
+    copyright: `© ${new Date().getFullYear()} SqlFlow. Built with Next.js and PostgreSQL 17 on Google Cloud.`,
     links: [] as { label: string; href: string }[],
   },
 };
