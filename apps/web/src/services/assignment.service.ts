@@ -16,8 +16,10 @@ const parseEnvelope = async <T,>(response: Response): Promise<ApiEnvelope<T>> =>
   return response.json();
 };
 
+export const ASSIGNMENTS_TAG = "assignments";
+
 export const fetchAssignments = async (): Promise<AssignmentSummary[]> => {
-  const response = await fetch(`${getApiBase()}/assignments`, { credentials: "include" });
+  const response = await fetch(`${getApiBase()}/assignments`, { credentials: "include", next: { tags: [ASSIGNMENTS_TAG] } });
   const result = await parseEnvelope<AssignmentSummary[]>(response);
   if (!result.success) {
     throw new Error(result.message || "Failed to fetch assignments");

@@ -1,575 +1,810 @@
 [
   {
-    "title": "Select All User Info",
+    "title": "Products Under 20",
     "description": "easy",
-    "question": "Write a query to retrieve the id, email, display_name, role, and email_verified status for every user in the users table.",
+    "question": "Return the name of every product priced below 20, sorted alphabetically by name.",
     "sampleTables": [
-      {
-        "tableName": "users",
-        "columns": [
-          { "columnName": "id", "dataType": "integer" },
-          { "columnName": "email", "dataType": "text" },
-          { "columnName": "display_name", "dataType": "text" },
-          { "columnName": "role", "dataType": "text" },
-          { "columnName": "email_verified", "dataType": "boolean" },
-          { "columnName": "image", "dataType": "text" }
-        ],
+      { "tableName": "products", "columns": [{ "columnName": "id", "dataType": "integer" }, { "columnName": "name", "dataType": "text" }, { "columnName": "price", "dataType": "numeric" }, { "columnName": "category", "dataType": "text" }],
         "rows": [
-          { "id": 1, "email": "alice@gmail.com",    "display_name": "Alice Johnson", "role": "student",    "email_verified": true,  "image": "https://i.pravatar.cc/150?u=alice" },
-          { "id": 2, "email": "bob@company.com",    "display_name": "Bob Smith",     "role": "student",    "email_verified": false, "image": null },
-          { "id": 3, "email": "carol@gmail.com",    "display_name": "Carol White",   "role": "instructor", "email_verified": true,  "image": "https://i.pravatar.cc/150?u=carol" },
-          { "id": 4, "email": "dave@yahoo.com",     "display_name": "Dave Brown",    "role": "student",    "email_verified": false, "image": null },
-          { "id": 5, "email": "admin@platform.com", "display_name": "Admin User",    "role": "admin",      "email_verified": true,  "image": "https://i.pravatar.cc/150?u=admin" },
-          { "id": 6, "email": "eve@gmail.com",      "display_name": "Eve Davis",     "role": "student",    "email_verified": true,  "image": null },
-          { "id": 7, "email": "frank@company.com",  "display_name": "Frank Miller",  "role": "instructor", "email_verified": false, "image": null },
-          { "id": 8, "email": "grace@gmail.com",    "display_name": "Grace Wilson",  "role": "admin",      "email_verified": true,  "image": "https://i.pravatar.cc/150?u=grace" }
-        ]
-      }
+          { "id": 1, "name": "Pen", "price": 2.5, "category": "stationery" },
+          { "id": 2, "name": "Notebook", "price": 4.0, "category": "stationery" },
+          { "id": 3, "name": "Desk Lamp", "price": 25.0, "category": "home" },
+          { "id": 4, "name": "Mug", "price": 8.5, "category": "kitchen" },
+          { "id": 5, "name": "Kettle", "price": 30.0, "category": "kitchen" }
+        ] }
     ],
-    "expectedOutput": {
-      "type": "table",
-      "value": [
-        { "id": 1, "email": "alice@gmail.com",    "display_name": "Alice Johnson", "role": "student",    "email_verified": true  },
-        { "id": 2, "email": "bob@company.com",    "display_name": "Bob Smith",     "role": "student",    "email_verified": false },
-        { "id": 3, "email": "carol@gmail.com",    "display_name": "Carol White",   "role": "instructor", "email_verified": true  },
-        { "id": 4, "email": "dave@yahoo.com",     "display_name": "Dave Brown",    "role": "student",    "email_verified": false },
-        { "id": 5, "email": "admin@platform.com", "display_name": "Admin User",    "role": "admin",      "email_verified": true  },
-        { "id": 6, "email": "eve@gmail.com",      "display_name": "Eve Davis",     "role": "student",    "email_verified": true  },
-        { "id": 7, "email": "frank@company.com",  "display_name": "Frank Miller",  "role": "instructor", "email_verified": false },
-        { "id": 8, "email": "grace@gmail.com",    "display_name": "Grace Wilson",  "role": "admin",      "email_verified": true  }
-      ]
-    }
+    "expectedOutput": { "type": "table", "value": [{ "name": "Mug" }, { "name": "Notebook" }, { "name": "Pen" }] }
   },
-
   {
-    "title": "Find Admin Users",
+    "title": "Count Shipped Orders",
     "description": "easy",
-    "question": "The platform has three roles: student, instructor, and admin. Write a query to find all users with the 'admin' role. Return only their id, email, and display_name.",
+    "question": "Count the number of orders with status 'shipped'. Name the column count.",
     "sampleTables": [
-      {
-        "tableName": "users",
-        "columns": [
-          { "columnName": "id", "dataType": "integer" },
-          { "columnName": "email", "dataType": "text" },
-          { "columnName": "display_name", "dataType": "text" },
-          { "columnName": "role", "dataType": "text" },
-          { "columnName": "email_verified", "dataType": "boolean" },
-          { "columnName": "image", "dataType": "text" }
-        ],
+      { "tableName": "orders", "columns": [{ "columnName": "id", "dataType": "integer" }, { "columnName": "customer_id", "dataType": "integer" }, { "columnName": "total", "dataType": "numeric" }, { "columnName": "status", "dataType": "text" }],
         "rows": [
-          { "id": 1, "email": "alice@gmail.com",    "display_name": "Alice Johnson", "role": "student",    "email_verified": true,  "image": "https://i.pravatar.cc/150?u=alice" },
-          { "id": 2, "email": "bob@company.com",    "display_name": "Bob Smith",     "role": "student",    "email_verified": false, "image": null },
-          { "id": 3, "email": "carol@gmail.com",    "display_name": "Carol White",   "role": "instructor", "email_verified": true,  "image": "https://i.pravatar.cc/150?u=carol" },
-          { "id": 4, "email": "dave@yahoo.com",     "display_name": "Dave Brown",    "role": "student",    "email_verified": false, "image": null },
-          { "id": 5, "email": "admin@platform.com", "display_name": "Admin User",    "role": "admin",      "email_verified": true,  "image": "https://i.pravatar.cc/150?u=admin" },
-          { "id": 6, "email": "eve@gmail.com",      "display_name": "Eve Davis",     "role": "student",    "email_verified": true,  "image": null },
-          { "id": 7, "email": "frank@company.com",  "display_name": "Frank Miller",  "role": "instructor", "email_verified": false, "image": null },
-          { "id": 8, "email": "grace@gmail.com",    "display_name": "Grace Wilson",  "role": "admin",      "email_verified": true,  "image": "https://i.pravatar.cc/150?u=grace" }
-        ]
-      }
+          { "id": 1, "customer_id": 1, "total": 50, "status": "shipped" },
+          { "id": 2, "customer_id": 2, "total": 20, "status": "pending" },
+          { "id": 3, "customer_id": 1, "total": 75, "status": "shipped" },
+          { "id": 4, "customer_id": 3, "total": 10, "status": "cancelled" }
+        ] }
     ],
-    "expectedOutput": {
-      "type": "table",
-      "value": [
-        { "id": 5, "email": "admin@platform.com", "display_name": "Admin User"   },
-        { "id": 8, "email": "grace@gmail.com",    "display_name": "Grace Wilson" }
-      ]
-    }
+    "expectedOutput": { "type": "table", "value": [{ "count": 2 }] }
   },
-
   {
-    "title": "Count All Users",
+    "title": "Distinct Customer Cities",
     "description": "easy",
-    "question": "Write a query to count the total number of rows in the users table. The result must have exactly one column named count.",
+    "question": "List each distinct city where customers live, sorted alphabetically. Name the column city.",
     "sampleTables": [
-      {
-        "tableName": "users",
-        "columns": [
-          { "columnName": "id", "dataType": "integer" },
-          { "columnName": "email", "dataType": "text" },
-          { "columnName": "display_name", "dataType": "text" },
-          { "columnName": "role", "dataType": "text" },
-          { "columnName": "email_verified", "dataType": "boolean" }
-        ],
+      { "tableName": "customers", "columns": [{ "columnName": "id", "dataType": "integer" }, { "columnName": "name", "dataType": "text" }, { "columnName": "city", "dataType": "text" }],
         "rows": [
-          { "id": 1, "email": "alice@gmail.com",    "display_name": "Alice Johnson", "role": "student",    "email_verified": true  },
-          { "id": 2, "email": "bob@company.com",    "display_name": "Bob Smith",     "role": "student",    "email_verified": false },
-          { "id": 3, "email": "carol@gmail.com",    "display_name": "Carol White",   "role": "instructor", "email_verified": true  },
-          { "id": 4, "email": "dave@yahoo.com",     "display_name": "Dave Brown",    "role": "student",    "email_verified": false },
-          { "id": 5, "email": "admin@platform.com", "display_name": "Admin User",    "role": "admin",      "email_verified": true  },
-          { "id": 6, "email": "eve@gmail.com",      "display_name": "Eve Davis",     "role": "student",    "email_verified": true  },
-          { "id": 7, "email": "frank@company.com",  "display_name": "Frank Miller",  "role": "instructor", "email_verified": false },
-          { "id": 8, "email": "grace@gmail.com",    "display_name": "Grace Wilson",  "role": "admin",      "email_verified": true  }
-        ]
-      }
+          { "id": 1, "name": "Ann", "city": "Pune" },
+          { "id": 2, "name": "Ben", "city": "Delhi" },
+          { "id": 3, "name": "Cara", "city": "Pune" },
+          { "id": 4, "name": "Dev", "city": "Mumbai" },
+          { "id": 5, "name": "Eli", "city": "Delhi" }
+        ] }
     ],
-    "expectedOutput": {
-      "type": "count",
-      "value": 8
-    }
+    "expectedOutput": { "type": "table", "value": [{ "city": "Delhi" }, { "city": "Mumbai" }, { "city": "Pune" }] }
   },
-
   {
-    "title": "Find Email-Verified Users",
+    "title": "Employees Without a Manager",
     "description": "easy",
-    "question": "Write a query to find all users who have verified their email address (email_verified = true). Return only their email and display_name.",
+    "question": "Return the name of every employee whose manager_id is NULL.",
     "sampleTables": [
-      {
-        "tableName": "users",
-        "columns": [
-          { "columnName": "id", "dataType": "integer" },
-          { "columnName": "email", "dataType": "text" },
-          { "columnName": "display_name", "dataType": "text" },
-          { "columnName": "role", "dataType": "text" },
-          { "columnName": "email_verified", "dataType": "boolean" }
-        ],
+      { "tableName": "employees", "columns": [{ "columnName": "id", "dataType": "integer" }, { "columnName": "name", "dataType": "text" }, { "columnName": "manager_id", "dataType": "integer" }],
         "rows": [
-          { "id": 1, "email": "alice@gmail.com",    "display_name": "Alice Johnson", "role": "student",    "email_verified": true  },
-          { "id": 2, "email": "bob@company.com",    "display_name": "Bob Smith",     "role": "student",    "email_verified": false },
-          { "id": 3, "email": "carol@gmail.com",    "display_name": "Carol White",   "role": "instructor", "email_verified": true  },
-          { "id": 4, "email": "dave@yahoo.com",     "display_name": "Dave Brown",    "role": "student",    "email_verified": false },
-          { "id": 5, "email": "admin@platform.com", "display_name": "Admin User",    "role": "admin",      "email_verified": true  },
-          { "id": 6, "email": "eve@gmail.com",      "display_name": "Eve Davis",     "role": "student",    "email_verified": true  },
-          { "id": 7, "email": "frank@company.com",  "display_name": "Frank Miller",  "role": "instructor", "email_verified": false },
-          { "id": 8, "email": "grace@gmail.com",    "display_name": "Grace Wilson",  "role": "admin",      "email_verified": true  }
-        ]
-      }
+          { "id": 1, "name": "Asha", "manager_id": null },
+          { "id": 2, "name": "Ravi", "manager_id": 1 },
+          { "id": 3, "name": "Meera", "manager_id": 1 },
+          { "id": 4, "name": "Kiran", "manager_id": 2 }
+        ] }
     ],
-    "expectedOutput": {
-      "type": "table",
-      "value": [
-        { "email": "alice@gmail.com",    "display_name": "Alice Johnson" },
-        { "email": "carol@gmail.com",    "display_name": "Carol White"   },
-        { "email": "admin@platform.com", "display_name": "Admin User"    },
-        { "email": "eve@gmail.com",      "display_name": "Eve Davis"     },
-        { "email": "grace@gmail.com",    "display_name": "Grace Wilson"  }
-      ]
-    }
+    "expectedOutput": { "type": "table", "value": [{ "name": "Asha" }] }
   },
-
   {
-    "title": "Find Gmail Users",
+    "title": "Salaries Between 50k and 80k",
     "description": "easy",
-    "question": "Write a query to find all users whose email address ends with '@gmail.com'. Return their id, email, and display_name.",
+    "question": "Return the name of each employee with a salary from 50000 to 80000 inclusive, ordered by id.",
     "sampleTables": [
-      {
-        "tableName": "users",
-        "columns": [
-          { "columnName": "id", "dataType": "integer" },
-          { "columnName": "email", "dataType": "text" },
-          { "columnName": "display_name", "dataType": "text" },
-          { "columnName": "role", "dataType": "text" },
-          { "columnName": "email_verified", "dataType": "boolean" }
-        ],
+      { "tableName": "employees", "columns": [{ "columnName": "id", "dataType": "integer" }, { "columnName": "name", "dataType": "text" }, { "columnName": "salary", "dataType": "integer" }],
         "rows": [
-          { "id": 1, "email": "alice@gmail.com",    "display_name": "Alice Johnson", "role": "student",    "email_verified": true  },
-          { "id": 2, "email": "bob@company.com",    "display_name": "Bob Smith",     "role": "student",    "email_verified": false },
-          { "id": 3, "email": "carol@gmail.com",    "display_name": "Carol White",   "role": "instructor", "email_verified": true  },
-          { "id": 4, "email": "dave@yahoo.com",     "display_name": "Dave Brown",    "role": "student",    "email_verified": false },
-          { "id": 5, "email": "admin@platform.com", "display_name": "Admin User",    "role": "admin",      "email_verified": true  },
-          { "id": 6, "email": "eve@gmail.com",      "display_name": "Eve Davis",     "role": "student",    "email_verified": true  },
-          { "id": 7, "email": "frank@company.com",  "display_name": "Frank Miller",  "role": "instructor", "email_verified": false },
-          { "id": 8, "email": "grace@gmail.com",    "display_name": "Grace Wilson",  "role": "admin",      "email_verified": true  }
-        ]
-      }
+          { "id": 1, "name": "A", "salary": 40000 },
+          { "id": 2, "name": "B", "salary": 55000 },
+          { "id": 3, "name": "C", "salary": 72000 },
+          { "id": 4, "name": "D", "salary": 90000 }
+        ] }
     ],
-    "expectedOutput": {
-      "type": "table",
-      "value": [
-        { "id": 1, "email": "alice@gmail.com", "display_name": "Alice Johnson" },
-        { "id": 3, "email": "carol@gmail.com", "display_name": "Carol White"   },
-        { "id": 6, "email": "eve@gmail.com",   "display_name": "Eve Davis"     },
-        { "id": 8, "email": "grace@gmail.com", "display_name": "Grace Wilson"  }
-      ]
-    }
+    "expectedOutput": { "type": "table", "value": [{ "name": "B" }, { "name": "C" }] }
   },
-
   {
-    "title": "Find Unverified Users",
+    "title": "Movie Titles Starting With In",
     "description": "easy",
-    "question": "Write a query to find all users who have NOT yet verified their email address. Return their id, email, and role.",
+    "question": "Return the titles of movies whose title starts with 'In', ordered by id.",
     "sampleTables": [
-      {
-        "tableName": "users",
-        "columns": [
-          { "columnName": "id", "dataType": "integer" },
-          { "columnName": "email", "dataType": "text" },
-          { "columnName": "display_name", "dataType": "text" },
-          { "columnName": "role", "dataType": "text" },
-          { "columnName": "email_verified", "dataType": "boolean" }
-        ],
+      { "tableName": "movies", "columns": [{ "columnName": "id", "dataType": "integer" }, { "columnName": "title", "dataType": "text" }, { "columnName": "year", "dataType": "integer" }],
         "rows": [
-          { "id": 1, "email": "alice@gmail.com",   "display_name": "Alice Johnson", "role": "student",    "email_verified": true  },
-          { "id": 2, "email": "bob@company.com",   "display_name": "Bob Smith",     "role": "student",    "email_verified": false },
-          { "id": 3, "email": "carol@gmail.com",   "display_name": "Carol White",   "role": "instructor", "email_verified": true  },
-          { "id": 4, "email": "dave@yahoo.com",    "display_name": "Dave Brown",    "role": "student",    "email_verified": false },
-          { "id": 5, "email": "eve@gmail.com",     "display_name": "Eve Davis",     "role": "student",    "email_verified": true  },
-          { "id": 6, "email": "frank@company.com", "display_name": "Frank Miller",  "role": "instructor", "email_verified": false },
-          { "id": 7, "email": "grace@gmail.com",   "display_name": "Grace Wilson",  "role": "admin",      "email_verified": true  },
-          { "id": 8, "email": "henry@yahoo.com",   "display_name": "Henry Clark",   "role": "student",    "email_verified": false }
-        ]
-      }
+          { "id": 1, "title": "Inception", "year": 2010 },
+          { "id": 2, "title": "Interstellar", "year": 2014 },
+          { "id": 3, "title": "Tenet", "year": 2020 },
+          { "id": 4, "title": "Insomnia", "year": 2002 },
+          { "id": 5, "title": "Dunkirk", "year": 2017 }
+        ] }
     ],
-    "expectedOutput": {
-      "type": "table",
-      "value": [
-        { "id": 2, "email": "bob@company.com",   "role": "student"     },
-        { "id": 4, "email": "dave@yahoo.com",    "role": "student"     },
-        { "id": 6, "email": "frank@company.com", "role": "instructor"  },
-        { "id": 8, "email": "henry@yahoo.com",   "role": "student"     }
-      ]
-    }
+    "expectedOutput": { "type": "table", "value": [{ "title": "Inception" }, { "title": "Interstellar" }, { "title": "Insomnia" }] }
   },
-
   {
-    "title": "Count Users by Role",
+    "title": "Top Three Scores",
+    "description": "easy",
+    "question": "Return the student and score for the three highest scores. Order by score descending, then student ascending.",
+    "sampleTables": [
+      { "tableName": "scores", "columns": [{ "columnName": "student", "dataType": "text" }, { "columnName": "score", "dataType": "integer" }],
+        "rows": [
+          { "student": "Ana", "score": 88 },
+          { "student": "Bo", "score": 95 },
+          { "student": "Cy", "score": 72 },
+          { "student": "Di", "score": 95 },
+          { "student": "Ed", "score": 60 }
+        ] }
+    ],
+    "expectedOutput": { "type": "table", "value": [{ "student": "Bo", "score": 95 }, { "student": "Di", "score": 95 }, { "student": "Ana", "score": 88 }] }
+  },
+  {
+    "title": "Average Rating",
+    "description": "easy",
+    "question": "Compute the average rating across all reviews. Name the column avg_rating.",
+    "sampleTables": [
+      { "tableName": "reviews", "columns": [{ "columnName": "id", "dataType": "integer" }, { "columnName": "product_id", "dataType": "integer" }, { "columnName": "rating", "dataType": "integer" }],
+        "rows": [
+          { "id": 1, "product_id": 1, "rating": 4 },
+          { "id": 2, "product_id": 1, "rating": 5 },
+          { "id": 3, "product_id": 2, "rating": 3 },
+          { "id": 4, "product_id": 2, "rating": 2 },
+          { "id": 5, "product_id": 2, "rating": 4 }
+        ] }
+    ],
+    "expectedOutput": { "type": "table", "value": [{ "avg_rating": 3.6 }] }
+  },
+  {
+    "title": "Total Sales Amount",
+    "description": "easy",
+    "question": "Compute the sum of all amounts in the sales table. Name the column total.",
+    "sampleTables": [
+      { "tableName": "sales", "columns": [{ "columnName": "id", "dataType": "integer" }, { "columnName": "amount", "dataType": "numeric" }],
+        "rows": [
+          { "id": 1, "amount": 100 },
+          { "id": 2, "amount": 250 },
+          { "id": 3, "amount": 75 }
+        ] }
+    ],
+    "expectedOutput": { "type": "table", "value": [{ "total": 425 }] }
+  },
+  {
+    "title": "Products Missing a Description",
+    "description": "easy",
+    "question": "Return the name of every product whose description is NULL, ordered by id.",
+    "sampleTables": [
+      { "tableName": "products", "columns": [{ "columnName": "id", "dataType": "integer" }, { "columnName": "name", "dataType": "text" }, { "columnName": "description", "dataType": "text" }],
+        "rows": [
+          { "id": 1, "name": "Pen", "description": null },
+          { "id": 2, "name": "Mug", "description": "ceramic" },
+          { "id": 3, "name": "Lamp", "description": null }
+        ] }
+    ],
+    "expectedOutput": { "type": "table", "value": [{ "name": "Pen" }, { "name": "Lamp" }] }
+  },
+  {
+    "title": "Sort by Grade Then Age",
+    "description": "easy",
+    "question": "Return student names ordered by grade descending, then by age ascending.",
+    "sampleTables": [
+      { "tableName": "students", "columns": [{ "columnName": "id", "dataType": "integer" }, { "columnName": "name", "dataType": "text" }, { "columnName": "grade", "dataType": "integer" }, { "columnName": "age", "dataType": "integer" }],
+        "rows": [
+          { "id": 1, "name": "Ann", "grade": 90, "age": 20 },
+          { "id": 2, "name": "Ben", "grade": 85, "age": 22 },
+          { "id": 3, "name": "Cid", "grade": 90, "age": 19 },
+          { "id": 4, "name": "Dee", "grade": 85, "age": 21 }
+        ] }
+    ],
+    "expectedOutput": { "type": "table", "value": [{ "name": "Cid" }, { "name": "Ann" }, { "name": "Dee" }, { "name": "Ben" }] }
+  },
+  {
+    "title": "Products Ending in E",
+    "description": "easy",
+    "question": "Return the name of every product whose name ends with the letter 'e' (case-sensitive).",
+    "sampleTables": [
+      { "tableName": "products", "columns": [{ "columnName": "id", "dataType": "integer" }, { "columnName": "name", "dataType": "text" }],
+        "rows": [
+          { "id": 1, "name": "Pen" },
+          { "id": 2, "name": "Notebook" },
+          { "id": 3, "name": "Desk Lamp" },
+          { "id": 4, "name": "Mug" },
+          { "id": 5, "name": "Kettle" }
+        ] }
+    ],
+    "expectedOutput": { "type": "table", "value": [{ "name": "Kettle" }] }
+  },
+  {
+    "title": "February Order Total",
+    "description": "easy",
+    "question": "Compute the total amount of orders placed in February 2024 (inclusive). Name the column total.",
+    "sampleTables": [
+      { "tableName": "orders", "columns": [{ "columnName": "id", "dataType": "integer" }, { "columnName": "order_date", "dataType": "date" }, { "columnName": "amount", "dataType": "integer" }],
+        "rows": [
+          { "id": 1, "order_date": "2024-01-05", "amount": 40 },
+          { "id": 2, "order_date": "2024-02-10", "amount": 60 },
+          { "id": 3, "order_date": "2024-02-20", "amount": 25 },
+          { "id": 4, "order_date": "2024-03-01", "amount": 90 }
+        ] }
+    ],
+    "expectedOutput": { "type": "table", "value": [{ "total": 85 }] }
+  },
+  {
+    "title": "Salary Band Labels",
+    "description": "easy",
+    "question": "For each employee, return name and a band: 'high' if salary is at least 80000, 'mid' if at least 50000, otherwise 'low'. Order by id. Name the column band.",
+    "sampleTables": [
+      { "tableName": "employees", "columns": [{ "columnName": "id", "dataType": "integer" }, { "columnName": "name", "dataType": "text" }, { "columnName": "salary", "dataType": "integer" }],
+        "rows": [
+          { "id": 1, "name": "A", "salary": 30000 },
+          { "id": 2, "name": "B", "salary": 60000 },
+          { "id": 3, "name": "C", "salary": 95000 }
+        ] }
+    ],
+    "expectedOutput": { "type": "table", "value": [{ "name": "A", "band": "low" }, { "name": "B", "band": "mid" }, { "name": "C", "band": "high" }] }
+  },
+  {
+    "title": "Distinct User Page Pairs",
+    "description": "easy",
+    "question": "Return the distinct (user_id, page) pairs from visits, ordered by user_id then page.",
+    "sampleTables": [
+      { "tableName": "visits", "columns": [{ "columnName": "user_id", "dataType": "integer" }, { "columnName": "page", "dataType": "text" }],
+        "rows": [
+          { "user_id": 1, "page": "home" },
+          { "user_id": 1, "page": "home" },
+          { "user_id": 1, "page": "about" },
+          { "user_id": 2, "page": "home" },
+          { "user_id": 2, "page": "home" }
+        ] }
+    ],
+    "expectedOutput": { "type": "table", "value": [{ "user_id": 1, "page": "about" }, { "user_id": 1, "page": "home" }, { "user_id": 2, "page": "home" }] }
+  },
+  {
+    "title": "Average Salary by Department Above 60k",
     "description": "medium",
-    "question": "Write a query to count how many users belong to each role. Return role and count. The column containing the count must be named count.",
+    "question": "For each department, return the average salary, but only for departments whose average salary is greater than 60000. Order by department. Name the column avg_salary.",
     "sampleTables": [
-      {
-        "tableName": "users",
-        "columns": [
-          { "columnName": "id", "dataType": "integer" },
-          { "columnName": "email", "dataType": "text" },
-          { "columnName": "display_name", "dataType": "text" },
-          { "columnName": "role", "dataType": "text" },
-          { "columnName": "email_verified", "dataType": "boolean" }
-        ],
+      { "tableName": "employees", "columns": [{ "columnName": "id", "dataType": "integer" }, { "columnName": "name", "dataType": "text" }, { "columnName": "department", "dataType": "text" }, { "columnName": "salary", "dataType": "integer" }],
         "rows": [
-          { "id": 1, "email": "alice@gmail.com",    "display_name": "Alice Johnson", "role": "student",    "email_verified": true  },
-          { "id": 2, "email": "bob@company.com",    "display_name": "Bob Smith",     "role": "student",    "email_verified": false },
-          { "id": 3, "email": "carol@gmail.com",    "display_name": "Carol White",   "role": "instructor", "email_verified": true  },
-          { "id": 4, "email": "dave@yahoo.com",     "display_name": "Dave Brown",    "role": "student",    "email_verified": false },
-          { "id": 5, "email": "admin@platform.com", "display_name": "Admin User",    "role": "admin",      "email_verified": true  },
-          { "id": 6, "email": "eve@gmail.com",      "display_name": "Eve Davis",     "role": "student",    "email_verified": true  },
-          { "id": 7, "email": "frank@company.com",  "display_name": "Frank Miller",  "role": "instructor", "email_verified": false },
-          { "id": 8, "email": "grace@gmail.com",    "display_name": "Grace Wilson",  "role": "admin",      "email_verified": true  }
-        ]
-      }
+          { "id": 1, "name": "Ann", "department": "eng", "salary": 90000 },
+          { "id": 2, "name": "Bo", "department": "eng", "salary": 70000 },
+          { "id": 3, "name": "Cy", "department": "sales", "salary": 50000 },
+          { "id": 4, "name": "Di", "department": "sales", "salary": 55000 },
+          { "id": 5, "name": "Ed", "department": "hr", "salary": 65000 }
+        ] }
     ],
-    "expectedOutput": {
-      "type": "table",
-      "value": [
-        { "role": "student",    "count": 4 },
-        { "role": "admin",      "count": 2 },
-        { "role": "instructor", "count": 2 }
-      ]
-    }
+    "expectedOutput": { "type": "table", "value": [{ "department": "eng", "avg_salary": 80000 }, { "department": "hr", "avg_salary": 65000 }] }
   },
-
   {
-    "title": "Count Unverified Users",
-    "description": "easy",
-    "question": "Write a query to count how many users have NOT verified their email address. The result must have exactly one column named count.",
-    "sampleTables": [
-      {
-        "tableName": "users",
-        "columns": [
-          { "columnName": "id", "dataType": "integer" },
-          { "columnName": "email", "dataType": "text" },
-          { "columnName": "display_name", "dataType": "text" },
-          { "columnName": "role", "dataType": "text" },
-          { "columnName": "email_verified", "dataType": "boolean" }
-        ],
-        "rows": [
-          { "id": 1, "email": "alice@gmail.com",    "display_name": "Alice Johnson", "role": "student",    "email_verified": true  },
-          { "id": 2, "email": "bob@company.com",    "display_name": "Bob Smith",     "role": "student",    "email_verified": false },
-          { "id": 3, "email": "carol@gmail.com",    "display_name": "Carol White",   "role": "instructor", "email_verified": true  },
-          { "id": 4, "email": "dave@yahoo.com",     "display_name": "Dave Brown",    "role": "student",    "email_verified": false },
-          { "id": 5, "email": "admin@platform.com", "display_name": "Admin User",    "role": "admin",      "email_verified": true  },
-          { "id": 6, "email": "eve@gmail.com",      "display_name": "Eve Davis",     "role": "student",    "email_verified": true  },
-          { "id": 7, "email": "frank@company.com",  "display_name": "Frank Miller",  "role": "instructor", "email_verified": false },
-          { "id": 8, "email": "grace@gmail.com",    "display_name": "Grace Wilson",  "role": "admin",      "email_verified": true  }
-        ]
-      }
-    ],
-    "expectedOutput": {
-      "type": "count",
-      "value": 3
-    }
-  },
-
-  {
-    "title": "Find Users Without a Profile Picture",
-    "description": "easy",
-    "question": "Write a query to find all users who have not set a profile picture (the image column is NULL). Return their id, display_name, and email.",
-    "sampleTables": [
-      {
-        "tableName": "users",
-        "columns": [
-          { "columnName": "id", "dataType": "integer" },
-          { "columnName": "email", "dataType": "text" },
-          { "columnName": "display_name", "dataType": "text" },
-          { "columnName": "role", "dataType": "text" },
-          { "columnName": "email_verified", "dataType": "boolean" },
-          { "columnName": "image", "dataType": "text" }
-        ],
-        "rows": [
-          { "id": 1, "email": "alice@gmail.com",    "display_name": "Alice Johnson", "role": "student",    "email_verified": true,  "image": "https://i.pravatar.cc/150?u=alice" },
-          { "id": 2, "email": "bob@company.com",    "display_name": "Bob Smith",     "role": "student",    "email_verified": false, "image": null },
-          { "id": 3, "email": "carol@gmail.com",    "display_name": "Carol White",   "role": "instructor", "email_verified": true,  "image": "https://i.pravatar.cc/150?u=carol" },
-          { "id": 4, "email": "dave@yahoo.com",     "display_name": "Dave Brown",    "role": "student",    "email_verified": false, "image": null },
-          { "id": 5, "email": "admin@platform.com", "display_name": "Admin User",    "role": "admin",      "email_verified": true,  "image": "https://i.pravatar.cc/150?u=admin" },
-          { "id": 6, "email": "eve@gmail.com",      "display_name": "Eve Davis",     "role": "student",    "email_verified": true,  "image": null },
-          { "id": 7, "email": "frank@company.com",  "display_name": "Frank Miller",  "role": "instructor", "email_verified": false, "image": null },
-          { "id": 8, "email": "grace@gmail.com",    "display_name": "Grace Wilson",  "role": "admin",      "email_verified": true,  "image": "https://i.pravatar.cc/150?u=grace" }
-        ]
-      }
-    ],
-    "expectedOutput": {
-      "type": "table",
-      "value": [
-        { "id": 2, "display_name": "Bob Smith",    "email": "bob@company.com"   },
-        { "id": 4, "display_name": "Dave Brown",   "email": "dave@yahoo.com"    },
-        { "id": 6, "display_name": "Eve Davis",    "email": "eve@gmail.com"     },
-        { "id": 7, "display_name": "Frank Miller", "email": "frank@company.com" }
-      ]
-    }
-  },
-
-  {
-    "title": "Find Verified Instructors",
+    "title": "Customers With More Than Two Orders",
     "description": "medium",
-    "question": "Write a query to find all users who are instructors AND have verified their email address. Return their id, email, and display_name.",
+    "question": "Return customer_id and order_count for customers with more than two orders. Name the column order_count.",
     "sampleTables": [
-      {
-        "tableName": "users",
-        "columns": [
-          { "columnName": "id", "dataType": "integer" },
-          { "columnName": "email", "dataType": "text" },
-          { "columnName": "display_name", "dataType": "text" },
-          { "columnName": "role", "dataType": "text" },
-          { "columnName": "email_verified", "dataType": "boolean" }
-        ],
+      { "tableName": "orders", "columns": [{ "columnName": "id", "dataType": "integer" }, { "columnName": "customer_id", "dataType": "integer" }, { "columnName": "total", "dataType": "integer" }],
         "rows": [
-          { "id": 1, "email": "alice@gmail.com",   "display_name": "Alice Johnson", "role": "student",    "email_verified": true  },
-          { "id": 2, "email": "bob@company.com",   "display_name": "Bob Smith",     "role": "student",    "email_verified": false },
-          { "id": 3, "email": "carol@gmail.com",   "display_name": "Carol White",   "role": "instructor", "email_verified": true  },
-          { "id": 4, "email": "dave@yahoo.com",    "display_name": "Dave Brown",    "role": "student",    "email_verified": false },
-          { "id": 5, "email": "eve@gmail.com",     "display_name": "Eve Davis",     "role": "instructor", "email_verified": false },
-          { "id": 6, "email": "frank@company.com", "display_name": "Frank Miller",  "role": "instructor", "email_verified": true  },
-          { "id": 7, "email": "grace@gmail.com",   "display_name": "Grace Wilson",  "role": "admin",      "email_verified": true  },
-          { "id": 8, "email": "henry@yahoo.com",   "display_name": "Henry Clark",   "role": "instructor", "email_verified": false }
-        ]
-      }
+          { "id": 1, "customer_id": 1, "total": 50 },
+          { "id": 2, "customer_id": 1, "total": 20 },
+          { "id": 3, "customer_id": 1, "total": 30 },
+          { "id": 4, "customer_id": 2, "total": 10 },
+          { "id": 5, "customer_id": 3, "total": 15 },
+          { "id": 6, "customer_id": 3, "total": 25 }
+        ] }
     ],
-    "expectedOutput": {
-      "type": "table",
-      "value": [
-        { "id": 3, "email": "carol@gmail.com",   "display_name": "Carol White"  },
-        { "id": 6, "email": "frank@company.com", "display_name": "Frank Miller" }
-      ]
-    }
+    "expectedOutput": { "type": "table", "value": [{ "customer_id": 1, "order_count": 3 }] }
   },
-
   {
-    "title": "Verified vs Unverified Count",
+    "title": "Employee and Manager Names",
     "description": "medium",
-    "question": "Write a query to show how many users have verified their email and how many have not. Return email_verified and count. The column containing the count must be named count.",
+    "question": "Using a self join, return each employee's name and their manager's name, for employees who have a manager. Order by employee name. Name the columns employee and manager.",
     "sampleTables": [
-      {
-        "tableName": "users",
-        "columns": [
-          { "columnName": "id", "dataType": "integer" },
-          { "columnName": "email", "dataType": "text" },
-          { "columnName": "display_name", "dataType": "text" },
-          { "columnName": "role", "dataType": "text" },
-          { "columnName": "email_verified", "dataType": "boolean" }
-        ],
+      { "tableName": "employees", "columns": [{ "columnName": "id", "dataType": "integer" }, { "columnName": "name", "dataType": "text" }, { "columnName": "manager_id", "dataType": "integer" }],
         "rows": [
-          { "id": 1, "email": "alice@gmail.com",    "display_name": "Alice Johnson", "role": "student",    "email_verified": true  },
-          { "id": 2, "email": "bob@company.com",    "display_name": "Bob Smith",     "role": "student",    "email_verified": false },
-          { "id": 3, "email": "carol@gmail.com",    "display_name": "Carol White",   "role": "instructor", "email_verified": true  },
-          { "id": 4, "email": "dave@yahoo.com",     "display_name": "Dave Brown",    "role": "student",    "email_verified": false },
-          { "id": 5, "email": "admin@platform.com", "display_name": "Admin User",    "role": "admin",      "email_verified": true  },
-          { "id": 6, "email": "eve@gmail.com",      "display_name": "Eve Davis",     "role": "student",    "email_verified": true  },
-          { "id": 7, "email": "frank@company.com",  "display_name": "Frank Miller",  "role": "instructor", "email_verified": false },
-          { "id": 8, "email": "grace@gmail.com",    "display_name": "Grace Wilson",  "role": "admin",      "email_verified": true  }
-        ]
-      }
+          { "id": 1, "name": "Asha", "manager_id": null },
+          { "id": 2, "name": "Ravi", "manager_id": 1 },
+          { "id": 3, "name": "Meera", "manager_id": 1 },
+          { "id": 4, "name": "Kiran", "manager_id": 2 }
+        ] }
     ],
-    "expectedOutput": {
-      "type": "table",
-      "value": [
-        { "email_verified": false, "count": 3 },
-        { "email_verified": true,  "count": 5 }
-      ]
-    }
+    "expectedOutput": { "type": "table", "value": [{ "employee": "Kiran", "manager": "Ravi" }, { "employee": "Meera", "manager": "Asha" }, { "employee": "Ravi", "manager": "Asha" }] }
   },
-
   {
-    "title": "Find Student Gmail Users",
+    "title": "Customer Names With Orders",
     "description": "medium",
-    "question": "Write a query to find all users who are students AND use a Gmail address (email ends with '@gmail.com'). Return their id, email, and display_name.",
+    "question": "Inner join customers and orders. Return each customer name and order total, ordered by order id.",
     "sampleTables": [
-      {
-        "tableName": "users",
-        "columns": [
-          { "columnName": "id", "dataType": "integer" },
-          { "columnName": "email", "dataType": "text" },
-          { "columnName": "display_name", "dataType": "text" },
-          { "columnName": "role", "dataType": "text" },
-          { "columnName": "email_verified", "dataType": "boolean" }
-        ],
+      { "tableName": "customers", "columns": [{ "columnName": "id", "dataType": "integer" }, { "columnName": "name", "dataType": "text" }],
         "rows": [
-          { "id": 1, "email": "alice@gmail.com",   "display_name": "Alice Johnson", "role": "student",    "email_verified": true  },
-          { "id": 2, "email": "bob@company.com",   "display_name": "Bob Smith",     "role": "student",    "email_verified": false },
-          { "id": 3, "email": "carol@gmail.com",   "display_name": "Carol White",   "role": "instructor", "email_verified": true  },
-          { "id": 4, "email": "dave@yahoo.com",    "display_name": "Dave Brown",    "role": "student",    "email_verified": false },
-          { "id": 5, "email": "eve@gmail.com",     "display_name": "Eve Davis",     "role": "student",    "email_verified": true  },
-          { "id": 6, "email": "frank@gmail.com",   "display_name": "Frank Miller",  "role": "instructor", "email_verified": false },
-          { "id": 7, "email": "grace@gmail.com",   "display_name": "Grace Wilson",  "role": "student",    "email_verified": true  },
-          { "id": 8, "email": "henry@yahoo.com",   "display_name": "Henry Clark",   "role": "admin",      "email_verified": true  }
-        ]
-      }
+          { "id": 1, "name": "Ann" },
+          { "id": 2, "name": "Ben" },
+          { "id": 3, "name": "Cara" }
+        ] },
+      { "tableName": "orders", "columns": [{ "columnName": "id", "dataType": "integer" }, { "columnName": "customer_id", "dataType": "integer" }, { "columnName": "total", "dataType": "integer" }],
+        "rows": [
+          { "id": 1, "customer_id": 1, "total": 50 },
+          { "id": 2, "customer_id": 1, "total": 20 },
+          { "id": 3, "customer_id": 3, "total": 75 }
+        ] }
     ],
-    "expectedOutput": {
-      "type": "table",
-      "value": [
-        { "id": 1, "email": "alice@gmail.com", "display_name": "Alice Johnson" },
-        { "id": 5, "email": "eve@gmail.com",   "display_name": "Eve Davis"     },
-        { "id": 7, "email": "grace@gmail.com", "display_name": "Grace Wilson"  }
-      ]
-    }
+    "expectedOutput": { "type": "table", "value": [{ "name": "Ann", "total": 50 }, { "name": "Ann", "total": 20 }, { "name": "Cara", "total": 75 }] }
   },
-
   {
-    "title": "Find Duplicate Emails",
+    "title": "All Customers With Optional Orders",
     "description": "medium",
-    "question": "Some users attempted to register multiple times with the same email. Write a query to find all email addresses that appear more than once in the users table. Return only the email column.",
+    "question": "Left join customers to orders. Return every customer's name and order total, ordered by customer id then order id. Customers with no orders should show NULL for total.",
     "sampleTables": [
-      {
-        "tableName": "users",
-        "columns": [
-          { "columnName": "id", "dataType": "integer" },
-          { "columnName": "email", "dataType": "text" },
-          { "columnName": "display_name", "dataType": "text" }
-        ],
+      { "tableName": "customers", "columns": [{ "columnName": "id", "dataType": "integer" }, { "columnName": "name", "dataType": "text" }],
         "rows": [
-          { "id": 1,  "email": "alice@example.com", "display_name": "Alice A"   },
-          { "id": 2,  "email": "bob@example.com",   "display_name": "Bob B"     },
-          { "id": 3,  "email": "alice@example.com", "display_name": "Alice Alt" },
-          { "id": 4,  "email": "carol@example.com", "display_name": "Carol C"   },
-          { "id": 5,  "email": "bob@example.com",   "display_name": "Bob Jones" },
-          { "id": 6,  "email": "dave@example.com",  "display_name": "Dave D"    },
-          { "id": 7,  "email": "eve@example.com",   "display_name": "Eve E"     },
-          { "id": 8,  "email": "alice@example.com", "display_name": "Alice III" },
-          { "id": 9,  "email": "frank@example.com", "display_name": "Frank F"   },
-          { "id": 10, "email": "bob@example.com",   "display_name": "Bob III"   }
-        ]
-      }
+          { "id": 1, "name": "Ann" },
+          { "id": 2, "name": "Ben" },
+          { "id": 3, "name": "Cara" }
+        ] },
+      { "tableName": "orders", "columns": [{ "columnName": "id", "dataType": "integer" }, { "columnName": "customer_id", "dataType": "integer" }, { "columnName": "total", "dataType": "integer" }],
+        "rows": [
+          { "id": 1, "customer_id": 1, "total": 50 },
+          { "id": 2, "customer_id": 1, "total": 20 },
+          { "id": 3, "customer_id": 3, "total": 75 }
+        ] }
     ],
-    "expectedOutput": {
-      "type": "table",
-      "value": [
-        { "email": "alice@example.com" },
-        { "email": "bob@example.com"   }
-      ]
-    }
+    "expectedOutput": { "type": "table", "value": [{ "name": "Ann", "total": 50 }, { "name": "Ann", "total": 20 }, { "name": "Ben", "total": null }, { "name": "Cara", "total": 75 }] }
   },
-
   {
-    "title": "Find Users with Corporate Emails",
+    "title": "Customers Who Never Ordered",
     "description": "medium",
-    "question": "Your company uses '@company.com' and '@corp.org' as corporate email domains. Write a query to find all users whose email ends with either '@company.com' or '@corp.org'. Return their id, email, display_name, and role.",
+    "question": "Return the name of every customer with no orders. Use a LEFT JOIN with an IS NULL check.",
     "sampleTables": [
-      {
-        "tableName": "users",
-        "columns": [
-          { "columnName": "id", "dataType": "integer" },
-          { "columnName": "email", "dataType": "text" },
-          { "columnName": "display_name", "dataType": "text" },
-          { "columnName": "role", "dataType": "text" },
-          { "columnName": "email_verified", "dataType": "boolean" }
-        ],
+      { "tableName": "customers", "columns": [{ "columnName": "id", "dataType": "integer" }, { "columnName": "name", "dataType": "text" }],
         "rows": [
-          { "id": 1, "email": "alice@gmail.com",   "display_name": "Alice Johnson", "role": "student",    "email_verified": true  },
-          { "id": 2, "email": "bob@company.com",   "display_name": "Bob Smith",     "role": "instructor", "email_verified": true  },
-          { "id": 3, "email": "carol@yahoo.com",   "display_name": "Carol White",   "role": "student",    "email_verified": false },
-          { "id": 4, "email": "dave@corp.org",     "display_name": "Dave Brown",    "role": "instructor", "email_verified": true  },
-          { "id": 5, "email": "eve@gmail.com",     "display_name": "Eve Davis",     "role": "student",    "email_verified": true  },
-          { "id": 6, "email": "frank@company.com", "display_name": "Frank Miller",  "role": "admin",      "email_verified": true  },
-          { "id": 7, "email": "grace@hotmail.com", "display_name": "Grace Wilson",  "role": "student",    "email_verified": false },
-          { "id": 8, "email": "henry@corp.org",    "display_name": "Henry Clark",   "role": "student",    "email_verified": false }
-        ]
-      }
+          { "id": 1, "name": "Ann" },
+          { "id": 2, "name": "Ben" },
+          { "id": 3, "name": "Cara" }
+        ] },
+      { "tableName": "orders", "columns": [{ "columnName": "id", "dataType": "integer" }, { "columnName": "customer_id", "dataType": "integer" }],
+        "rows": [
+          { "id": 1, "customer_id": 1 },
+          { "id": 2, "customer_id": 1 },
+          { "id": 3, "customer_id": 3 }
+        ] }
     ],
-    "expectedOutput": {
-      "type": "table",
-      "value": [
-        { "id": 2, "email": "bob@company.com",   "display_name": "Bob Smith",    "role": "instructor" },
-        { "id": 4, "email": "dave@corp.org",     "display_name": "Dave Brown",   "role": "instructor" },
-        { "id": 6, "email": "frank@company.com", "display_name": "Frank Miller", "role": "admin"      },
-        { "id": 8, "email": "henry@corp.org",    "display_name": "Henry Clark",  "role": "student"    }
-      ]
-    }
+    "expectedOutput": { "type": "table", "value": [{ "name": "Ben" }] }
   },
-
   {
-    "title": "Find the User with the Highest ID",
+    "title": "Most Expensive Product Per Category",
     "description": "medium",
-    "question": "Write a query to find the single user with the highest id value. Return their id, email, and display_name. Your query must return exactly one row.",
+    "question": "For each category, return the name of its most expensive product and that product's price. Order by category.",
     "sampleTables": [
-      {
-        "tableName": "users",
-        "columns": [
-          { "columnName": "id", "dataType": "integer" },
-          { "columnName": "email", "dataType": "text" },
-          { "columnName": "display_name", "dataType": "text" },
-          { "columnName": "role", "dataType": "text" },
-          { "columnName": "email_verified", "dataType": "boolean" }
-        ],
+      { "tableName": "products", "columns": [{ "columnName": "id", "dataType": "integer" }, { "columnName": "category", "dataType": "text" }, { "columnName": "name", "dataType": "text" }, { "columnName": "price", "dataType": "integer" }],
         "rows": [
-          { "id": 1, "email": "alice@gmail.com",   "display_name": "Alice Johnson", "role": "student",    "email_verified": true  },
-          { "id": 2, "email": "bob@company.com",   "display_name": "Bob Smith",     "role": "student",    "email_verified": false },
-          { "id": 3, "email": "carol@gmail.com",   "display_name": "Carol White",   "role": "instructor", "email_verified": true  },
-          { "id": 4, "email": "dave@yahoo.com",    "display_name": "Dave Brown",    "role": "student",    "email_verified": false },
-          { "id": 5, "email": "eve@gmail.com",     "display_name": "Eve Davis",     "role": "student",    "email_verified": true  },
-          { "id": 6, "email": "frank@company.com", "display_name": "Frank Miller",  "role": "instructor", "email_verified": false },
-          { "id": 7, "email": "grace@gmail.com",   "display_name": "Grace Wilson",  "role": "admin",      "email_verified": true  }
-        ]
-      }
+          { "id": 1, "category": "kitchen", "name": "Mug", "price": 8 },
+          { "id": 2, "category": "kitchen", "name": "Kettle", "price": 30 },
+          { "id": 3, "category": "stationery", "name": "Pen", "price": 2 },
+          { "id": 4, "category": "stationery", "name": "Notebook", "price": 4 },
+          { "id": 5, "category": "home", "name": "Lamp", "price": 25 }
+        ] }
     ],
-    "expectedOutput": {
-      "type": "row",
-      "value": { "id": 7, "email": "grace@gmail.com", "display_name": "Grace Wilson" }
-    }
+    "expectedOutput": { "type": "table", "value": [{ "category": "home", "name": "Lamp", "price": 25 }, { "category": "kitchen", "name": "Kettle", "price": 30 }, { "category": "stationery", "name": "Notebook", "price": 4 }] }
   },
-
   {
-    "title": "Count Users per Role (Verified Only)",
+    "title": "Daily Running Total",
+    "description": "medium",
+    "question": "Return sale_date and the running total of amount ordered by sale_date. Name the column running_total.",
+    "sampleTables": [
+      { "tableName": "sales", "columns": [{ "columnName": "id", "dataType": "integer" }, { "columnName": "sale_date", "dataType": "date" }, { "columnName": "amount", "dataType": "integer" }],
+        "rows": [
+          { "id": 1, "sale_date": "2024-01-01", "amount": 100 },
+          { "id": 2, "sale_date": "2024-01-02", "amount": 50 },
+          { "id": 3, "sale_date": "2024-01-03", "amount": 75 }
+        ] }
+    ],
+    "expectedOutput": { "type": "table", "value": [{ "sale_date": "2024-01-01", "running_total": 100 }, { "sale_date": "2024-01-02", "running_total": 150 }, { "sale_date": "2024-01-03", "running_total": 225 }] }
+  },
+  {
+    "title": "Salary Rank Within Department",
+    "description": "medium",
+    "question": "Rank employees within each department by salary descending (1 = highest). Return department, name, and rank, ordered by department then rank. Name the column rank.",
+    "sampleTables": [
+      { "tableName": "employees", "columns": [{ "columnName": "id", "dataType": "integer" }, { "columnName": "name", "dataType": "text" }, { "columnName": "department", "dataType": "text" }, { "columnName": "salary", "dataType": "integer" }],
+        "rows": [
+          { "id": 1, "name": "Ann", "department": "eng", "salary": 90000 },
+          { "id": 2, "name": "Bo", "department": "eng", "salary": 70000 },
+          { "id": 3, "name": "Cy", "department": "sales", "salary": 50000 },
+          { "id": 4, "name": "Di", "department": "sales", "salary": 55000 },
+          { "id": 5, "name": "Ed", "department": "hr", "salary": 65000 }
+        ] }
+    ],
+    "expectedOutput": { "type": "table", "value": [{ "department": "eng", "name": "Ann", "rank": 1 }, { "department": "eng", "name": "Bo", "rank": 2 }, { "department": "hr", "name": "Ed", "rank": 1 }, { "department": "sales", "name": "Di", "rank": 1 }, { "department": "sales", "name": "Cy", "rank": 2 }] }
+  },
+  {
+    "title": "Unique Visitors Per Page",
+    "description": "medium",
+    "question": "Count the distinct users who visited each page. Return page and unique_users, ordered by page. Name the column unique_users.",
+    "sampleTables": [
+      { "tableName": "visits", "columns": [{ "columnName": "user_id", "dataType": "integer" }, { "columnName": "page", "dataType": "text" }],
+        "rows": [
+          { "user_id": 1, "page": "home" },
+          { "user_id": 1, "page": "home" },
+          { "user_id": 2, "page": "home" },
+          { "user_id": 1, "page": "about" },
+          { "user_id": 1, "page": "home" }
+        ] }
+    ],
+    "expectedOutput": { "type": "table", "value": [{ "page": "about", "unique_users": 1 }, { "page": "home", "unique_users": 2 }] }
+  },
+  {
+    "title": "Percent of Orders Shipped",
+    "description": "medium",
+    "question": "Return the percentage of orders with status 'shipped', rounded to 1 decimal place. Name the column pct_shipped.",
+    "sampleTables": [
+      { "tableName": "orders", "columns": [{ "columnName": "id", "dataType": "integer" }, { "columnName": "status", "dataType": "text" }],
+        "rows": [
+          { "id": 1, "status": "shipped" },
+          { "id": 2, "status": "shipped" },
+          { "id": 3, "status": "pending" },
+          { "id": 4, "status": "shipped" }
+        ] }
+    ],
+    "expectedOutput": { "type": "table", "value": [{ "pct_shipped": 75.0 }] }
+  },
+  {
+    "title": "Replace Missing Discounts With Zero",
+    "description": "medium",
+    "question": "Return each product's name and its discount, using 0 where the discount is NULL. Order by id. Name the column effective_discount.",
+    "sampleTables": [
+      { "tableName": "products", "columns": [{ "columnName": "id", "dataType": "integer" }, { "columnName": "name", "dataType": "text" }, { "columnName": "discount", "dataType": "numeric" }],
+        "rows": [
+          { "id": 1, "name": "Pen", "discount": null },
+          { "id": 2, "name": "Mug", "discount": 0.1 },
+          { "id": 3, "name": "Lamp", "discount": null }
+        ] }
+    ],
+    "expectedOutput": { "type": "table", "value": [{ "name": "Pen", "effective_discount": 0 }, { "name": "Mug", "effective_discount": 0.1 }, { "name": "Lamp", "effective_discount": 0 }] }
+  },
+  {
+    "title": "Employees Above Average Salary",
+    "description": "medium",
+    "question": "Return the name of every employee whose salary is above the average salary of all employees. Order by salary descending.",
+    "sampleTables": [
+      { "tableName": "employees", "columns": [{ "columnName": "id", "dataType": "integer" }, { "columnName": "name", "dataType": "text" }, { "columnName": "salary", "dataType": "integer" }],
+        "rows": [
+          { "id": 1, "name": "Ann", "salary": 90000 },
+          { "id": 2, "name": "Bo", "salary": 70000 },
+          { "id": 3, "name": "Cy", "salary": 50000 },
+          { "id": 4, "name": "Di", "salary": 55000 },
+          { "id": 5, "name": "Ed", "salary": 65000 }
+        ] }
+    ],
+    "expectedOutput": { "type": "table", "value": [{ "name": "Ann" }, { "name": "Bo" }] }
+  },
+  {
+    "title": "Customers With No Orders (NOT IN)",
+    "description": "medium",
+    "question": "Using NOT IN, return the name of every customer who has never placed an order.",
+    "sampleTables": [
+      { "tableName": "customers", "columns": [{ "columnName": "id", "dataType": "integer" }, { "columnName": "name", "dataType": "text" }],
+        "rows": [
+          { "id": 1, "name": "Ann" },
+          { "id": 2, "name": "Ben" },
+          { "id": 3, "name": "Cara" }
+        ] },
+      { "tableName": "orders", "columns": [{ "columnName": "id", "dataType": "integer" }, { "columnName": "customer_id", "dataType": "integer" }],
+        "rows": [
+          { "id": 1, "customer_id": 1 },
+          { "id": 2, "customer_id": 1 },
+          { "id": 3, "customer_id": 3 }
+        ] }
+    ],
+    "expectedOutput": { "type": "table", "value": [{ "name": "Ben" }] }
+  },
+  {
+    "title": "Customers With a Large Order",
+    "description": "medium",
+    "question": "Using EXISTS, return the name of every customer who has at least one order with total greater than 60.",
+    "sampleTables": [
+      { "tableName": "customers", "columns": [{ "columnName": "id", "dataType": "integer" }, { "columnName": "name", "dataType": "text" }],
+        "rows": [
+          { "id": 1, "name": "Ann" },
+          { "id": 2, "name": "Ben" },
+          { "id": 3, "name": "Cara" }
+        ] },
+      { "tableName": "orders", "columns": [{ "columnName": "id", "dataType": "integer" }, { "columnName": "customer_id", "dataType": "integer" }, { "columnName": "total", "dataType": "integer" }],
+        "rows": [
+          { "id": 1, "customer_id": 1, "total": 50 },
+          { "id": 2, "customer_id": 1, "total": 20 },
+          { "id": 3, "customer_id": 3, "total": 75 }
+        ] }
+    ],
+    "expectedOutput": { "type": "table", "value": [{ "name": "Cara" }] }
+  },
+  {
+    "title": "Combined Supplier and Customer Names",
+    "description": "medium",
+    "question": "Return every distinct name appearing in either suppliers or customers, sorted alphabetically. Name the column name.",
+    "sampleTables": [
+      { "tableName": "suppliers", "columns": [{ "columnName": "id", "dataType": "integer" }, { "columnName": "name", "dataType": "text" }],
+        "rows": [
+          { "id": 1, "name": "Acme" },
+          { "id": 2, "name": "Globex" },
+          { "id": 3, "name": "Initech" }
+        ] },
+      { "tableName": "customers", "columns": [{ "columnName": "id", "dataType": "integer" }, { "columnName": "name", "dataType": "text" }],
+        "rows": [
+          { "id": 1, "name": "Globex" },
+          { "id": 2, "name": "Umbrella" }
+        ] }
+    ],
+    "expectedOutput": { "type": "table", "value": [{ "name": "Acme" }, { "name": "Globex" }, { "name": "Initech" }, { "name": "Umbrella" }] }
+  },
+  {
+    "title": "Order Totals by Status Pivot",
+    "description": "medium",
+    "question": "Return one row with the total amount for each of the statuses shipped, pending, and cancelled. Name the columns shipped_total, pending_total, cancelled_total.",
+    "sampleTables": [
+      { "tableName": "orders", "columns": [{ "columnName": "id", "dataType": "integer" }, { "columnName": "status", "dataType": "text" }, { "columnName": "total", "dataType": "integer" }],
+        "rows": [
+          { "id": 1, "status": "shipped", "total": 50 },
+          { "id": 2, "status": "pending", "total": 20 },
+          { "id": 3, "status": "shipped", "total": 75 },
+          { "id": 4, "status": "cancelled", "total": 10 }
+        ] }
+    ],
+    "expectedOutput": { "type": "table", "value": [{ "shipped_total": 125, "pending_total": 20, "cancelled_total": 10 }] }
+  },
+  {
+    "title": "Second Highest Salary",
+    "description": "medium",
+    "question": "Return the second highest distinct salary. Name the column second_highest.",
+    "sampleTables": [
+      { "tableName": "employees", "columns": [{ "columnName": "id", "dataType": "integer" }, { "columnName": "salary", "dataType": "integer" }],
+        "rows": [
+          { "id": 1, "salary": 90000 },
+          { "id": 2, "salary": 70000 },
+          { "id": 3, "salary": 50000 },
+          { "id": 4, "salary": 55000 },
+          { "id": 5, "salary": 65000 }
+        ] }
+    ],
+    "expectedOutput": { "type": "table", "value": [{ "second_highest": 70000 }] }
+  },
+  {
+    "title": "Duplicate Emails",
+    "description": "medium",
+    "question": "Return each email that appears more than once, with its count, ordered by email. Name the column count.",
+    "sampleTables": [
+      { "tableName": "emails", "columns": [{ "columnName": "id", "dataType": "integer" }, { "columnName": "email", "dataType": "text" }],
+        "rows": [
+          { "id": 1, "email": "a@x.com" },
+          { "id": 2, "email": "b@x.com" },
+          { "id": 3, "email": "a@x.com" },
+          { "id": 4, "email": "c@x.com" },
+          { "id": 5, "email": "b@x.com" }
+        ] }
+    ],
+    "expectedOutput": { "type": "table", "value": [{ "email": "a@x.com", "count": 2 }, { "email": "b@x.com", "count": 2 }] }
+  },
+  {
+    "title": "Monthly Order Totals",
+    "description": "medium",
+    "question": "Using PostgreSQL, return each month as 'YYYY-MM' with its total order amount, ordered by month. Name the columns month and total.",
+    "sampleTables": [
+      { "tableName": "orders", "columns": [{ "columnName": "id", "dataType": "integer" }, { "columnName": "order_date", "dataType": "date" }, { "columnName": "total", "dataType": "integer" }],
+        "rows": [
+          { "id": 1, "order_date": "2024-01-05", "total": 40 },
+          { "id": 2, "order_date": "2024-01-20", "total": 60 },
+          { "id": 3, "order_date": "2024-02-03", "total": 25 }
+        ] }
+    ],
+    "expectedOutput": { "type": "table", "value": [{ "month": "2024-01", "total": 100 }, { "month": "2024-02", "total": 25 }] }
+  },
+  {
+    "title": "Top Two Earners Per Department",
     "description": "hard",
-    "question": "Write a query that counts how many verified users (email_verified = true) exist for each role. Only include roles that have at least 2 verified users. Return role and count, where count is the column name for the number of verified users.",
+    "question": "Return the top two highest-paid employees in each department, ordered by department then salary descending. Return department and name.",
     "sampleTables": [
-      {
-        "tableName": "users",
-        "columns": [
-          { "columnName": "id", "dataType": "integer" },
-          { "columnName": "email", "dataType": "text" },
-          { "columnName": "display_name", "dataType": "text" },
-          { "columnName": "role", "dataType": "text" },
-          { "columnName": "email_verified", "dataType": "boolean" }
-        ],
+      { "tableName": "employees", "columns": [{ "columnName": "id", "dataType": "integer" }, { "columnName": "name", "dataType": "text" }, { "columnName": "department", "dataType": "text" }, { "columnName": "salary", "dataType": "integer" }],
         "rows": [
-          { "id": 1,  "email": "alice@gmail.com",    "display_name": "Alice",   "role": "student",    "email_verified": true  },
-          { "id": 2,  "email": "bob@gmail.com",      "display_name": "Bob",     "role": "student",    "email_verified": true  },
-          { "id": 3,  "email": "carol@gmail.com",    "display_name": "Carol",   "role": "student",    "email_verified": false },
-          { "id": 4,  "email": "dave@gmail.com",     "display_name": "Dave",    "role": "student",    "email_verified": true  },
-          { "id": 5,  "email": "eve@gmail.com",      "display_name": "Eve",     "role": "instructor", "email_verified": true  },
-          { "id": 6,  "email": "frank@gmail.com",    "display_name": "Frank",   "role": "instructor", "email_verified": false },
-          { "id": 7,  "email": "grace@gmail.com",    "display_name": "Grace",   "role": "instructor", "email_verified": true  },
-          { "id": 8,  "email": "henry@gmail.com",    "display_name": "Henry",   "role": "admin",      "email_verified": true  },
-          { "id": 9,  "email": "iris@gmail.com",     "display_name": "Iris",    "role": "admin",      "email_verified": false },
-          { "id": 10, "email": "jack@gmail.com",     "display_name": "Jack",    "role": "admin",      "email_verified": false }
-        ]
-      }
+          { "id": 1, "name": "Ann", "department": "eng", "salary": 90000 },
+          { "id": 2, "name": "Bo", "department": "eng", "salary": 70000 },
+          { "id": 3, "name": "Cy", "department": "sales", "salary": 50000 },
+          { "id": 4, "name": "Di", "department": "sales", "salary": 55000 },
+          { "id": 5, "name": "Ed", "department": "hr", "salary": 65000 },
+          { "id": 6, "name": "Fay", "department": "sales", "salary": 40000 }
+        ] }
     ],
-    "expectedOutput": {
-      "type": "table",
-      "value": [
-        { "role": "student",    "count": 3 },
-        { "role": "instructor", "count": 2 }
-      ]
-    }
+    "expectedOutput": { "type": "table", "value": [{ "department": "eng", "name": "Ann" }, { "department": "eng", "name": "Bo" }, { "department": "hr", "name": "Ed" }, { "department": "sales", "name": "Di" }, { "department": "sales", "name": "Cy" }] }
+  },
+  {
+    "title": "Longest Login Streak Per User",
+    "description": "hard",
+    "question": "For each user, compute the longest run of consecutive login days. Return user_id and streak, ordered by user_id. Name the column streak.",
+    "sampleTables": [
+      { "tableName": "logins", "columns": [{ "columnName": "user_id", "dataType": "integer" }, { "columnName": "login_date", "dataType": "date" }],
+        "rows": [
+          { "user_id": 1, "login_date": "2024-01-01" },
+          { "user_id": 1, "login_date": "2024-01-02" },
+          { "user_id": 1, "login_date": "2024-01-03" },
+          { "user_id": 1, "login_date": "2024-01-05" },
+          { "user_id": 2, "login_date": "2024-01-02" }
+        ] }
+    ],
+    "expectedOutput": { "type": "table", "value": [{ "user_id": 1, "streak": 3 }, { "user_id": 2, "streak": 1 }] }
+  },
+  {
+    "title": "Total Reports Under Asha",
+    "description": "hard",
+    "question": "Using a recursive CTE, count how many employees report to Asha directly or indirectly (all levels). Name the column count.",
+    "sampleTables": [
+      { "tableName": "employees", "columns": [{ "columnName": "id", "dataType": "integer" }, { "columnName": "name", "dataType": "text" }, { "columnName": "manager_id", "dataType": "integer" }],
+        "rows": [
+          { "id": 1, "name": "Asha", "manager_id": null },
+          { "id": 2, "name": "Ravi", "manager_id": 1 },
+          { "id": 3, "name": "Meera", "manager_id": 2 },
+          { "id": 4, "name": "Kiran", "manager_id": 2 },
+          { "id": 5, "name": "Lata", "manager_id": 3 }
+        ] }
+    ],
+    "expectedOutput": { "type": "table", "value": [{ "count": 4 }] }
+  },
+  {
+    "title": "Median Salary",
+    "description": "hard",
+    "question": "Using PostgreSQL, compute the median salary of all employees with percentile_cont. Name the column median.",
+    "sampleTables": [
+      { "tableName": "employees", "columns": [{ "columnName": "id", "dataType": "integer" }, { "columnName": "salary", "dataType": "integer" }],
+        "rows": [
+          { "id": 1, "salary": 90000 },
+          { "id": 2, "salary": 70000 },
+          { "id": 3, "salary": 50000 },
+          { "id": 4, "salary": 55000 },
+          { "id": 5, "salary": 65000 }
+        ] }
+    ],
+    "expectedOutput": { "type": "table", "value": [{ "median": 65000 }] }
+  },
+  {
+    "title": "Regional Quarterly Pivot",
+    "description": "hard",
+    "question": "Return each region with its Q1 total and Q2 total using conditional aggregation, ordered by region. Name the columns q1_total and q2_total.",
+    "sampleTables": [
+      { "tableName": "sales", "columns": [{ "columnName": "id", "dataType": "integer" }, { "columnName": "region", "dataType": "text" }, { "columnName": "quarter", "dataType": "text" }, { "columnName": "amount", "dataType": "integer" }],
+        "rows": [
+          { "id": 1, "region": "north", "quarter": "Q1", "amount": 100 },
+          { "id": 2, "region": "north", "quarter": "Q2", "amount": 150 },
+          { "id": 3, "region": "south", "quarter": "Q1", "amount": 80 },
+          { "id": 4, "region": "south", "quarter": "Q2", "amount": 120 },
+          { "id": 5, "region": "south", "quarter": "Q2", "amount": 30 }
+        ] }
+    ],
+    "expectedOutput": { "type": "table", "value": [{ "region": "north", "q1_total": 100, "q2_total": 150 }, { "region": "south", "q1_total": 80, "q2_total": 150 }] }
+  },
+  {
+    "title": "Customers Ordering in Both Years",
+    "description": "hard",
+    "question": "Return the customer_id of every customer who placed orders in both 2023 and 2024. Use a CTE or INTERSECT.",
+    "sampleTables": [
+      { "tableName": "orders", "columns": [{ "columnName": "id", "dataType": "integer" }, { "columnName": "customer_id", "dataType": "integer" }, { "columnName": "order_year", "dataType": "integer" }, { "columnName": "total", "dataType": "integer" }],
+        "rows": [
+          { "id": 1, "customer_id": 1, "order_year": 2023, "total": 10 },
+          { "id": 2, "customer_id": 1, "order_year": 2024, "total": 20 },
+          { "id": 3, "customer_id": 2, "order_year": 2023, "total": 15 },
+          { "id": 4, "customer_id": 3, "order_year": 2024, "total": 5 },
+          { "id": 5, "customer_id": 3, "order_year": 2024, "total": 7 }
+        ] }
+    ],
+    "expectedOutput": { "type": "table", "value": [{ "customer_id": 1 }] }
+  },
+  {
+    "title": "Month Over Month Revenue Change",
+    "description": "hard",
+    "question": "Using LAG, return each month and its revenue change from the previous month. The first month's change should be NULL. Order by month. Name the column change.",
+    "sampleTables": [
+      { "tableName": "revenue", "columns": [{ "columnName": "month", "dataType": "text" }, { "columnName": "amount", "dataType": "integer" }],
+        "rows": [
+          { "month": "2024-01", "amount": 100 },
+          { "month": "2024-02", "amount": 150 },
+          { "month": "2024-03", "amount": 120 }
+        ] }
+    ],
+    "expectedOutput": { "type": "table", "value": [{ "month": "2024-01", "change": null }, { "month": "2024-02", "change": 50 }, { "month": "2024-03", "change": -30 }] }
+  },
+  {
+    "title": "Category Share of Total Sales",
+    "description": "hard",
+    "question": "Return each category's percentage of total sales, rounded to 2 decimal places, using a window function. Order by category. Name the column pct.",
+    "sampleTables": [
+      { "tableName": "sales", "columns": [{ "columnName": "id", "dataType": "integer" }, { "columnName": "category", "dataType": "text" }, { "columnName": "amount", "dataType": "integer" }],
+        "rows": [
+          { "id": 1, "category": "a", "amount": 200 },
+          { "id": 2, "category": "b", "amount": 300 },
+          { "id": 3, "category": "c", "amount": 500 }
+        ] }
+    ],
+    "expectedOutput": { "type": "table", "value": [{ "category": "a", "pct": 20.00 }, { "category": "b", "pct": 30.00 }, { "category": "c", "pct": 50.00 }] }
+  },
+  {
+    "title": "First Order Per Customer",
+    "description": "hard",
+    "question": "Return each customer_id with the total of their earliest order (by order_date). Order by customer_id. Name the column total.",
+    "sampleTables": [
+      { "tableName": "orders", "columns": [{ "columnName": "id", "dataType": "integer" }, { "columnName": "customer_id", "dataType": "text" }, { "columnName": "order_date", "dataType": "date" }, { "columnName": "total", "dataType": "integer" }],
+        "rows": [
+          { "id": 1, "customer_id": "c1", "order_date": "2024-01-10", "total": 50 },
+          { "id": 2, "customer_id": "c1", "order_date": "2024-03-01", "total": 20 },
+          { "id": 3, "customer_id": "c2", "order_date": "2024-02-05", "total": 70 },
+          { "id": 4, "customer_id": "c2", "order_date": "2024-02-01", "total": 10 }
+        ] }
+    ],
+    "expectedOutput": { "type": "table", "value": [{ "customer_id": "c1", "total": 50 }, { "customer_id": "c2", "total": 10 }] }
+  },
+  {
+    "title": "Students Per Course Title",
+    "description": "hard",
+    "question": "Join students, enrollments, and courses. Return each course title with the number of enrolled students, ordered by title. Name the column student_count.",
+    "sampleTables": [
+      { "tableName": "students", "columns": [{ "columnName": "id", "dataType": "integer" }, { "columnName": "name", "dataType": "text" }],
+        "rows": [
+          { "id": 1, "name": "Ann" },
+          { "id": 2, "name": "Ben" },
+          { "id": 3, "name": "Cy" }
+        ] },
+      { "tableName": "courses", "columns": [{ "columnName": "id", "dataType": "integer" }, { "columnName": "title", "dataType": "text" }],
+        "rows": [
+          { "id": 10, "title": "SQL" },
+          { "id": 20, "title": "Python" }
+        ] },
+      { "tableName": "enrollments", "columns": [{ "columnName": "student_id", "dataType": "integer" }, { "columnName": "course_id", "dataType": "integer" }],
+        "rows": [
+          { "student_id": 1, "course_id": 10 },
+          { "student_id": 1, "course_id": 20 },
+          { "student_id": 2, "course_id": 10 }
+        ] }
+    ],
+    "expectedOutput": { "type": "table", "value": [{ "title": "Python", "student_count": 1 }, { "title": "SQL", "student_count": 2 }] }
+  },
+  {
+    "title": "Customers Above Average Spend",
+    "description": "hard",
+    "question": "Using a CTE, compute each customer's total spend, then return the customer_id of customers whose total spend is above the average total spend across customers. Order by customer_id.",
+    "sampleTables": [
+      { "tableName": "orders", "columns": [{ "columnName": "id", "dataType": "integer" }, { "columnName": "customer_id", "dataType": "text" }, { "columnName": "total", "dataType": "integer" }],
+        "rows": [
+          { "id": 1, "customer_id": "c1", "total": 50 },
+          { "id": 2, "customer_id": "c1", "total": 20 },
+          { "id": 3, "customer_id": "c2", "total": 10 },
+          { "id": 4, "customer_id": "c3", "total": 75 },
+          { "id": 5, "customer_id": "c4", "total": 5 }
+        ] }
+    ],
+    "expectedOutput": { "type": "table", "value": [{ "customer_id": "c1" }, { "customer_id": "c3" }] }
+  },
+  {
+    "title": "Latest Email Per User",
+    "description": "hard",
+    "question": "For each user_id, return the email from the row with the most recent updated_at. Order by user_id.",
+    "sampleTables": [
+      { "tableName": "users_log", "columns": [{ "columnName": "user_id", "dataType": "integer" }, { "columnName": "email", "dataType": "text" }, { "columnName": "updated_at", "dataType": "timestamp" }],
+        "rows": [
+          { "user_id": 1, "email": "a@x.com", "updated_at": "2024-01-01T10:00:00" },
+          { "user_id": 1, "email": "new@x.com", "updated_at": "2024-02-01T09:00:00" },
+          { "user_id": 2, "email": "b@x.com", "updated_at": "2024-01-15T08:00:00" }
+        ] }
+    ],
+    "expectedOutput": { "type": "table", "value": [{ "user_id": 1, "email": "new@x.com" }, { "user_id": 2, "email": "b@x.com" }] }
+  },
+  {
+    "title": "Funnel Stage Counts",
+    "description": "hard",
+    "question": "Count distinct users who reached each stage in one row: views, carts, purchases. Use conditional aggregation.",
+    "sampleTables": [
+      { "tableName": "events", "columns": [{ "columnName": "user_id", "dataType": "integer" }, { "columnName": "event", "dataType": "text" }],
+        "rows": [
+          { "user_id": 1, "event": "view" },
+          { "user_id": 1, "event": "cart" },
+          { "user_id": 1, "event": "purchase" },
+          { "user_id": 2, "event": "view" },
+          { "user_id": 2, "event": "cart" },
+          { "user_id": 3, "event": "view" }
+        ] }
+    ],
+    "expectedOutput": { "type": "table", "value": [{ "views": 3, "carts": 2, "purchases": 1 }] }
+  },
+  {
+    "title": "Missing Invoice Numbers",
+    "description": "hard",
+    "question": "Using PostgreSQL, return every id between the minimum and maximum invoice id that does not exist in invoices. Order by missing_id. Name the column missing_id.",
+    "sampleTables": [
+      { "tableName": "invoices", "columns": [{ "columnName": "id", "dataType": "integer" }],
+        "rows": [
+          { "id": 1 },
+          { "id": 2 },
+          { "id": 4 },
+          { "id": 5 },
+          { "id": 8 }
+        ] }
+    ],
+    "expectedOutput": { "type": "table", "value": [{ "missing_id": 3 }, { "missing_id": 6 }, { "missing_id": 7 }] }
+  },
+  {
+    "title": "Three Day Moving Average",
+    "description": "hard",
+    "question": "Using a window function, return each day with the average price of that day and up to the two previous days. Use the default frame for partial windows at the start. Order by day. Name the column moving_avg.",
+    "sampleTables": [
+      { "tableName": "prices", "columns": [{ "columnName": "day", "dataType": "integer" }, { "columnName": "price", "dataType": "integer" }],
+        "rows": [
+          { "day": 1, "price": 10 },
+          { "day": 2, "price": 20 },
+          { "day": 3, "price": 30 },
+          { "day": 4, "price": 40 },
+          { "day": 5, "price": 50 }
+        ] }
+    ],
+    "expectedOutput": { "type": "table", "value": [{ "day": 1, "moving_avg": 10 }, { "day": 2, "moving_avg": 15 }, { "day": 3, "moving_avg": 20 }, { "day": 4, "moving_avg": 30 }, { "day": 5, "moving_avg": 40 }] }
   }
 ]

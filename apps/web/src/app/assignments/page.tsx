@@ -2,6 +2,9 @@ import { fetchAssignments } from "@/services/assignment.service";
 import { AssignmentBrowser } from "@/components/assignments/assignment-browser";
 import type { AssignmentSummary } from "@sql-learn/types";
 
+// Cached until the seed job calls /revalidate (tag: assignments); the hourly revalidate is only a safety net.
+export const revalidate = 3600;
+
 export default async function AssignmentsPage() {
   let assignments: AssignmentSummary[] = [];
   let error = null;
