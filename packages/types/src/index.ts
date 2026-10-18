@@ -26,12 +26,12 @@ export interface AssignmentSummary {
   id: number;
   title: string;
   description: string | null;
+  question: string;
   difficulty: Difficulty;
   createdAt: string;
 }
 
 export interface AssignmentDetail extends AssignmentSummary {
-  question: string;
   sampleTables: SampleTable[];
   testCases: VisibleTestCase[];
 }
