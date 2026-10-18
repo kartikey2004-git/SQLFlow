@@ -48,7 +48,7 @@ export function AssignmentBrowser({ assignments }: { assignments: AssignmentSumm
       if (!needle) return true;
       return (
         assignment.title.toLowerCase().includes(needle) ||
-        (assignment.description ?? "").toLowerCase().includes(needle)
+        assignment.question.toLowerCase().includes(needle)
       );
     });
   }, [assignments, query, filter]);
@@ -70,7 +70,7 @@ export function AssignmentBrowser({ assignments }: { assignments: AssignmentSumm
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search by title or description"
+            placeholder="Search by title or question"
             className="h-10 w-full border border-neutral-200 bg-white pl-9 pr-3 text-sm text-neutral-900 outline-none transition-colors placeholder:text-neutral-400 focus:border-emerald-600 focus:ring-[3px] focus:ring-emerald-600/15"
           />
         </label>
@@ -140,8 +140,8 @@ export function AssignmentBrowser({ assignments }: { assignments: AssignmentSumm
                   {assignment.title}
                 </h2>
 
-                <p className="text-sm leading-relaxed text-neutral-600">
-                  {assignment.description ?? "No description provided."}
+                <p className="line-clamp-3 text-sm leading-relaxed text-neutral-600">
+                  {assignment.question}
                 </p>
 
                 <div className="mt-auto flex items-center justify-between border-t border-neutral-100 pt-4">

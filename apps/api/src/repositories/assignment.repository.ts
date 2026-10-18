@@ -10,12 +10,12 @@ export interface AssignmentSummaryRow {
   id: number;
   title: string;
   description: string | null;
+  question: string;
   difficulty: "easy" | "medium" | "hard";
   created_at: Date;
 }
 
 export interface AssignmentPublicRow extends AssignmentSummaryRow {
-  question: string;
   sample_tables: SampleTableRow[];
 }
 
@@ -28,7 +28,7 @@ const PUBLIC_COLUMNS = "id, title, description, difficulty, question, sample_tab
 export const AssignmentRepository = {
   async listPublished(): Promise<AssignmentSummaryRow[]> {
     const result = await pool.query<AssignmentSummaryRow>(
-      `SELECT id, title, description, difficulty, created_at
+      `SELECT id, title, description, question, difficulty, created_at
        FROM assignments
        WHERE is_published = true AND deleted_at IS NULL
        ORDER BY created_at DESC`,

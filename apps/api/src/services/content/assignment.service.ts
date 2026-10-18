@@ -10,6 +10,7 @@ export class AssignmentService {
       id: row.id,
       title: row.title,
       description: row.description,
+      question: row.question,
       difficulty: row.difficulty,
       createdAt: row.created_at.toISOString(),
     }));
