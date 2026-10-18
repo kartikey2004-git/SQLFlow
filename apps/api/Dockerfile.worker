@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM oven/bun:1.3.3-alpine AS deps
+FROM oven/bun:1.4.2-alpine AS deps
 WORKDIR /repo
 COPY package.json bun.lock turbo.json ./
 COPY apps/api/package.json apps/api/package.json
